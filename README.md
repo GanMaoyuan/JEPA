@@ -155,7 +155,7 @@
 
 在当前时刻 ![](https://latex.codecogs.com/svg.latex?t=0) ，模式2的从感知到动作优化所组成的一个闭环（或称“回合”，episode）可以表述为总共7个步骤：<br>
 **1、感知（perception）**：<br>
-感知模块给出 ![](https://latex.codecogs.com/svg.latex?s[0]=\text{Enc}(x)) 。<br>
+感知模块的编码器给出 ![](https://latex.codecogs.com/svg.latex?s[0]=\text{Enc}(x)) 。<br>
 **2、动作提议（action proposal）**：<br>
 执行模块提出一个有待后续进行评估/优化的初始动作序列（可以理解为“直觉动作序列”），即 ![](https://latex.codecogs.com/svg.latex?a[0],\cdots,a[t],\cdots,a[T]) 。<br>
 **3、模拟世界状态演化（simulation，带有主观性）**：<br>
@@ -268,8 +268,40 @@
 
 现在，针对该任务，智能体已经掌握了真正的最优动作序列。希望设计一种机制，使它以后再次面对（甚至多次重复面对）同样的任务时，无需再动用计算资源耗费较大、耗时较长的模式2，而是借助反应迅速的模式1来近似实现模式2的功能。<br>
 该机制的具体实现方式如下：<br>
-1、感知模块给出 ![](https://latex.codecogs.com/svg.latex?s[0]=\text{Enc}(x[0])) 。<br>
+1、感知模块的编码器给出 ![](https://latex.codecogs.com/svg.latex?s[0]=\text{Enc}(x[0])) 。<br>
 2、执行模块的策略子模块给出 ![](https://latex.codecogs.com/svg.latex?a[0]=\text{A}(s[0])) ，它将被随即发送到智能体的效应模块并被实际执行。<br>
 3、![](https://latex.codecogs.com/svg.latex?\check{a}[0]) 作为相对于 ![](https://latex.codecogs.com/svg.latex?a[0]) 的监督信号，指导策略子模块的参数调整（将 ![](https://latex.codecogs.com/svg.latex?D(\check{a}[0],a[0])) 的最小化作为训练目标）。<br>
 4、感知模块通过传感器接收到来自所处物理世界的信号 ![](https://latex.codecogs.com/svg.latex?x[1]=\text{World}(x[0],a[0])) ，后续过程同理，![](https://latex.codecogs.com/svg.latex?D(\check{a}[1],a[1])) 的最小化将会作为策略子模块的训练目标。<br>
-5、
+5、![](https://latex.codecogs.com/svg.latex?D(\check{a}[2],a[2]),\cdots,D(\check{a}[t],a[t]),\cdots,D(\check{a}[T],a[T])) 同理。<br>
+6、期间只有策略子模块的参与，没有任何其他模块的参与。<br>
+一旦策略子模块完成了上述这种训练，智能体以后面对同样的任务时，便只需动用模式1的这一策略子模块来迅速输出近似最优动作序列（循环且迅速地执行上述的步骤1至步骤2），无需动用模式2。<br>
+这实现了“摊销推理”（amortized inference）的效果，即：<br>
+繁重的预演、规划、规划迭代、策略习得仅仅发生在“熟练掌握新技能”这一初始时期，并且耗费大量计算资源。而在这一时期结束过后，每当面对同样的任务，智能体均可以极低的计算成本（仅 ![](https://latex.codecogs.com/svg.latex?\text{A}(\cdot)) 函数映射所需的计算资源）近似复现当初所习得的最优动作序列。该过程的本质是推理，它具备摊销性（平均推理成本随次数增多而下降）。
+
+### 2.2、短期记忆容量限制
+
+针对某个特定任务，试图绕过策略子模块的训练而完整精确地存储最优动作序列，以期实现另一种摊销推理，这种做法实际上并不可行。<br>
+这是因为，智能体在其生命周期当中需要面对海量不同的任务，每天都可能面对新的任务，新任务的数量总是不断增长，倘若对每种不同的任务都完整精确地存储最优动作序列，很有可能早早触及短期记忆容量上限，或者早早遗忘，这种做法也就变得不可行。<br>
+与之相对，智能体可以为多种不同的任务（或者任务集）分别配置专门的策略子模块（而非完整精确存储对应的最优动作序列），它们甚至可以同时工作。这是可行的，因为对策略子模块的存储仅仅意味着 ![](https://latex.codecogs.com/svg.latex?\text{A}(\cdot)) 这一函数的少量参数的存储，这具备存储资源占用上的可控性。
+
+### 2.3、质量较高的初始序列
+
+如果智能体意图针对某个特定任务进一步规划出更优的动作序列，那么它可以首先利用编码器（给出 ![](https://latex.codecogs.com/svg.latex?s[0]) ）、策略子模块（给出 ![](https://latex.codecogs.com/svg.latex?a[i]) ）、预测器（给出 ![](https://latex.codecogs.com/svg.latex?s[i]) ），较为迅速地生成质量较高的初始动作序列（近似于原先规划出的最优动作序列），即 ![](https://latex.codecogs.com/svg.latex?\tilde{a}[0],\cdots,\tilde{a}[t],\cdots,\tilde{a}[T]) ，其中
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\tilde{a}[i+1]=\text{A}(s[i+1]),\quad{}s[i+1]=\text{Pred}(s[i],\tilde{a}[i]),">
+</p>
+
+再以之为规划的起点，规划出更优的动作序列，记为 ![](https://latex.codecogs.com/svg.latex?\check{\check{a}}[0],\cdots,\check{\check{a}}[t],\cdots,\check{\check{a}}[T]) ，从而实现加速优化的效果。<br>
+
+### 2.4、模式1与模式2的分工
+
+智能体只拥有唯一一个世界模型模块与唯一一个代价模块，其模式2单次只能用于应对单个任务。为了避免资源错配，有必要使模式2仅仅用于应对全新的或者复杂的任务，而将简单的或者已经熟练掌握的众多任务交给多个可以并行工作的模式1策略子模块。
+<br><br><br><br><br><br><br>
+
+# 潜变量能量模型
+
+## 1、一切智能个体所进行的主观预测行为的本质局限以及不确定性根基
+
+在当前时刻，智能体的感知模块通过传感器接收到来自所处物理世界的信号 ![](https://latex.codecogs.com/svg.latex?x) ，这是刚刚发生并且已经发生的事实；<br>
+在未来时刻，智能体的感知模块通过传感器接收到来自所处物理世界的信号可能为 ![](https://latex.codecogs.com/svg.latex?y) ，这是一种概率性事件，当前并未发生，未来也不保证一定发生，但可以说，未来它有可能发生。
