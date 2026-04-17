@@ -157,12 +157,7 @@
 **1、感知（perception）**：<br>
 感知模块给出 ![](https://latex.codecogs.com/svg.latex?s[0]=\text{Enc}(x)) 。<br>
 **2、动作提议（action proposal）**：<br>
-执行模块提出一个有待后续进行评估/优化的初始动作序列（可以理解为“直觉动作序列”），即
-
-<p align="center">
-<img src="https://latex.codecogs.com/svg.latex?a[0],\cdots,a[t],\cdots,a[T].">
-</p>
-
+执行模块提出一个有待后续进行评估/优化的初始动作序列（可以理解为“直觉动作序列”），即 ![](https://latex.codecogs.com/svg.latex?a[0],\cdots,a[t],\cdots,a[T]) 。<br>
 **3、模拟世界状态演化（simulation，带有主观性）**：<br>
 根据
 
@@ -170,12 +165,7 @@
 <img src="https://latex.codecogs.com/svg.latex?s[i+1]=\text{Pred}(s[i],a[i]),">
 </p>
 
-世界模型模块针对初始动作序列的每一个提议动作，依次给出对应的世界状态预测，使其组成世界状态预测序列，即
-
-<p align="center">
-<img src="https://latex.codecogs.com/svg.latex?s[1],\cdots,s[t+1],\cdots,s[T+1].">
-</p>
-
+世界模型模块针对初始动作序列的每一个提议动作，依次给出对应的世界状态预测，使其组成世界状态预测序列，即 ![](https://latex.codecogs.com/svg.latex?s[1],\cdots,s[t+1],\cdots,s[T+1]) 。<br>
 **4、预测代价总和评估（evaluation，可以理解为“提议动作后果预演”）**：<br>
 根据
 
@@ -183,13 +173,7 @@
 <img src="https://latex.codecogs.com/svg.latex?f[i]=\text{C}(s[i]),">
 </p>
 
-评价器针对世界状态预测序列当中的每一个世界状态预测，分别给出对应的代价预测，使其组成代价预测序列，即
-
-<p align="center">
-<img src="https://latex.codecogs.com/svg.latex?\text{C}(s[1]),\cdots,\text{C}(s[t+1]),\cdots,\text{C}(s[T+1]),">
-</p>
-
-并计算其总和，即
+评价器针对世界状态预测序列当中的每一个世界状态预测，分别给出对应的代价预测，使其组成代价预测序列，即 ![](https://latex.codecogs.com/svg.latex?\text{C}(s[1]),\cdots,\text{C}(s[t+1]),\cdots,\text{C}(s[T+1])) ，并计算其总和，即
 
 <p align="center">
 <img src="https://latex.codecogs.com/svg.latex?F(T)=\sum_{i=1}^{T+1}\text{C}(s[i]).">
@@ -221,4 +205,47 @@
 <img src="https://latex.codecogs.com/svg.latex?F(T)=\sum_{i=1}^{T+1}\text{C}(s[i])">
 </p>
 
-的其中一个加性（additive）贡献项；![](https://latex.codecogs.com/svg.latex?F(T)) 对 ![](https://latex.codecogs.com/svg.latex?a[t]) 的梯度实际上仅仅指 ![](https://latex.codecogs.com/svg.latex?\text{C}(s[t+1])) 对 ![](https://latex.codecogs.com/svg.latex?a[t]) 的梯度，而与由其他那些提议动作自变量所产生的加性贡献项无关。
+的其中一个加性（additive）贡献项；![](https://latex.codecogs.com/svg.latex?F(T)) 对 ![](https://latex.codecogs.com/svg.latex?a[t]) 的梯度实际上仅仅指 ![](https://latex.codecogs.com/svg.latex?\text{C}(s[t+1])) 对 ![](https://latex.codecogs.com/svg.latex?a[t]) 的梯度，而与由其他那些提议动作自变量所产生的加性贡献项无关。<br>
+换句话说，![](https://latex.codecogs.com/svg.latex?a[t]) 作为一个单独的自变量，与其他的提议动作自变量在梯度优化意义上是解耦而互不干扰的。<br>
+如果代价模块的评价器作为函数 ![](https://latex.codecogs.com/svg.latex?\text{C}(\cdot)) 是可微的（differentiable，或者称其为"well-behaved"），那么原梯度的链式分解项
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\frac{\partial\text{C}(\text{Pred}(s[t],a[t]))}{\partial\text{Pred}(s[t],a[t])}">
+</p>
+
+就是可解的；<br>
+如果世界模型模块的预测器作为函数 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) 是可微的，那么原梯度的另一个链式分解项
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\frac{\partial\text{Pred}(s[t],a[t])}{\partial{}a[t]}">
+</p>
+
+就是可解的；<br>
+在上述两个假设成立的前提下，原梯度
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\frac{\partial\text{C}(\text{Pred}(s[t],a[t]))}{\partial{}a[t]}">
+</p>
+
+是可解的，也就是说，提议动作 ![](https://latex.codecogs.com/svg.latex?a[t]) 的基于梯度下降方法的迭代优化方式
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?a[t]\leftarrow{}a[t]-\eta\cdot\frac{\partial{}F(T)}{\partial{}a[t]}">
+</p>
+
+是可行的。提议动作序列中的其他提议动作 ![](https://latex.codecogs.com/svg.latex?a[i]) 同理。<br>
+总之，在代价模块的评价器以及世界模型的预测器均可微的前提下，使用梯度下降方法来对提议动作序列 ![](https://latex.codecogs.com/svg.latex?a[0],\cdots,a[t],\cdots,a[T]) 进行迭代优化是可行的。<br>
+在经过从**步骤2**到**步骤5**的充分多轮次的迭代后，可以得到使得预测代价总和最小的“最优动作序列”，记为 ![](https://latex.codecogs.com/svg.latex?\check{a}[0],\cdots,\check{a}[t],\cdots,\check{a}[T]) 。这样的迭代过程就可以理解为智能体在模式2下对最优动作序列的规划过程。<br>
+**6、实际执行（acting）**：<br>
+最优动作序列中的第1个动作（或者前几个动作）被随即发送到智能体的效应模块并被实际执行。<br>
+应该特别注意，并非所有动作全部被发送到效应模块，这是为了避免智能体的预测误差（尤其是世界状态预测误差以及代价预测误差）累积过大所导致的决策动作错误累积过大（进而直接导致真实内在代价累积过大）。<br>
+**7、评价器与预测器的优化（optimization）**：<br>
+假设实际执行动作序列为 ![](https://latex.codecogs.com/svg.latex?\check{a}[0],\cdots,\check{a}[t]) 。根据
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?x[i+1]=\text{World}(x[i],a[i]),">
+</p>
+
+感知模块的传感器所接收到的物理世界信号时序可表示为 ![](https://latex.codecogs.com/svg.latex?x[1],\cdots,x[t+1]) 。先后经由感知模块的编码器处理，得到 ![](https://latex.codecogs.com/svg.latex?s^\prime[1],\cdots,s^\prime[t+1]) 。先后输入到代价模块的内在代价子模块，得到 ![](https://latex.codecogs.com/svg.latex?\text{C}(s^\prime[1]),\cdots,\text{C}(s^\prime[t+1])) ；与此同时，“真实状态-真实代价”配对序列 ![](https://latex.codecogs.com/svg.latex?(s^\prime[1],\text{C}(s^\prime[1])),\cdots,(s^\prime[t+1],\text{C}(s^\prime[t+1]))) 被先后地存储到短期记忆模块。<br>
+实际上，早在**步骤4**（预测代价总和评估）当中，世界状态预测序列 ![](https://latex.codecogs.com/svg.latex?s[1],\cdots,s[t+1],\cdots,s[T+1]) 与计算得到的代价预测序列 ![](https://latex.codecogs.com/svg.latex?\text{C}(s[1]),\cdots,\text{C}(s[t+1]),\cdots,\text{C}(s[T+1])) 所组成的“预测状态-预测代价”配对序列 ![](https://latex.codecogs.com/svg.latex?(s[1],\text{C}(s[1])),\cdots,(s[T+1],\text{C}(s[t+1])),\cdots,(s[T+1],\text{C}(s[T+1]))) 就已经被存储到短期记忆模块。<br>
+先前存储的“预测状态-预测代价”配对序列与刚刚存储的“真实状态-真实代价”配对序列的用途，就在于**步骤7**的此刻所发生的评价器优化以及预测器优化：<br>
