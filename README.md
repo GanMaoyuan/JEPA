@@ -247,5 +247,5 @@
 </p>
 
 感知模块的传感器所接收到的物理世界信号时序可表示为 ![](https://latex.codecogs.com/svg.latex?x[1],\cdots,x[t+1]) 。先后经由感知模块的编码器处理，得到 ![](https://latex.codecogs.com/svg.latex?s^\prime[1],\cdots,s^\prime[t+1]) 。先后输入到代价模块的内在代价子模块，得到 ![](https://latex.codecogs.com/svg.latex?\text{C}(s^\prime[1]),\cdots,\text{C}(s^\prime[t+1])) ；与此同时，“真实状态-真实代价”配对序列 ![](https://latex.codecogs.com/svg.latex?(s^\prime[1],\text{C}(s^\prime[1])),\cdots,(s^\prime[t+1],\text{C}(s^\prime[t+1]))) 被先后地存储到短期记忆模块。<br>
-实际上，早在**步骤4**（预测代价总和评估）当中，世界状态预测序列 ![](https://latex.codecogs.com/svg.latex?s[1],\cdots,s[t+1],\cdots,s[T+1]) 与计算得到的代价预测序列 ![](https://latex.codecogs.com/svg.latex?\text{C}(s[1]),\cdots,\text{C}(s[t+1]),\cdots,\text{C}(s[T+1])) 所组成的“预测状态-预测代价”配对序列 ![](https://latex.codecogs.com/svg.latex?(s[1],\text{C}(s[1])),\cdots,(s[T+1],\text{C}(s[t+1])),\cdots,(s[T+1],\text{C}(s[T+1]))) 就已经被存储到短期记忆模块。<br>
+实际上，早在**步骤4**（预测代价总和评估）当中，世界状态预测序列 ![](https://latex.codecogs.com/svg.latex?s[1],\cdots,s[t+1],\cdots,s[T+1]) 与计算得到的代价预测序列 ![](https://latex.codecogs.com/svg.latex?\text{C}(s[1]),\cdots,\text{C}(s[t+1]),\cdots,\text{C}(s[T+1])) 所组成的“预测状态-预测代价”配对序列 ![](https://latex.codecogs.com/svg.latex?(s[1],\text{C}(s[1])),\cdots,(s[t+1],\text{C}(s[t+1])),\cdots,(s[T+1],\text{C}(s[T+1]))) 就已经被存储到短期记忆模块。<br>
 先前存储的“预测状态-预测代价”配对序列与刚刚存储的“真实状态-真实代价”配对序列的用途，就在于**步骤7**的此刻所发生的评价器优化以及预测器优化：<br>
