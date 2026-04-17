@@ -149,7 +149,7 @@
 </p>
 
 它的最小化就可以作为评价器的训练目标。<br>
-训练目标的内涵就在于减小评价器的预测误差。评价器对世界模型模块所给出的预测世界状态的对应代价的准确估计，将为构成预测世界状态影响因素之一的提议动作的优化带来可能。这构成了智能体借助模式2进行提议动作后果预演以及最优动作序列规划（planning）的基础。
+训练目标的内涵就在于减小评价器的预测误差。评价器对世界模型模块所给出的预测世界状态的对应代价的准确估计，将为构成预测世界状态影响因素之一的提议动作的优化带来可能。这构成了智能体借助模式2进行提议动作后果预演（reasoning）以及最优动作序列规划（planning）的基础。
 
 ## 2、模式2的闭环
 
@@ -166,7 +166,7 @@
 </p>
 
 世界模型模块针对初始动作序列的每一个提议动作，依次给出对应的世界状态预测，使其组成世界状态预测序列，即 ![](https://latex.codecogs.com/svg.latex?s[1],\cdots,s[t+1],\cdots,s[T+1]) 。<br>
-**4、预测代价总和评估（evaluation，可以理解为“提议动作后果预演”）**：<br>
+**4、预测代价总和评估（evaluation，可以理解为“提议动作后果预演”，reasoning）**：<br>
 根据
 
 <p align="center">
@@ -249,3 +249,27 @@
 感知模块的传感器所接收到的物理世界信号时序可表示为 ![](https://latex.codecogs.com/svg.latex?x[1],\cdots,x[t+1]) 。先后经由感知模块的编码器处理，得到 ![](https://latex.codecogs.com/svg.latex?s^\prime[1],\cdots,s^\prime[t+1]) 。先后输入到代价模块的内在代价子模块，得到 ![](https://latex.codecogs.com/svg.latex?\text{C}(s^\prime[1]),\cdots,\text{C}(s^\prime[t+1])) ；与此同时，“真实状态-真实代价”配对序列 ![](https://latex.codecogs.com/svg.latex?(s^\prime[1],\text{C}(s^\prime[1])),\cdots,(s^\prime[t+1],\text{C}(s^\prime[t+1]))) 被先后地存储到短期记忆模块。<br>
 实际上，早在**步骤4**（预测代价总和评估）当中，世界状态预测序列 ![](https://latex.codecogs.com/svg.latex?s[1],\cdots,s[t+1],\cdots,s[T+1]) 与计算得到的代价预测序列 ![](https://latex.codecogs.com/svg.latex?\text{C}(s[1]),\cdots,\text{C}(s[t+1]),\cdots,\text{C}(s[T+1])) 所组成的“预测状态-预测代价”配对序列 ![](https://latex.codecogs.com/svg.latex?(s[1],\text{C}(s[1])),\cdots,(s[t+1],\text{C}(s[t+1])),\cdots,(s[T+1],\text{C}(s[T+1]))) 就已经被存储到短期记忆模块。<br>
 先前存储的“预测状态-预测代价”配对序列与刚刚存储的“真实状态-真实代价”配对序列的用途，就在于**步骤7**的此刻所发生的评价器优化以及预测器优化：<br>
+![](https://latex.codecogs.com/svg.latex?\text{C}(s^\prime[1]),\cdots,\text{C}(s^\prime[t+1])) 分别作为相对于 ![](https://latex.codecogs.com/svg.latex?\text{C}(s[1]),\cdots,\text{C}(s[t+1])) 的监督信号，指导评价器在模式2的此轮闭环中的优化，也可通过梯度分解链间接指导预测器在模式2的此轮闭环中的优化。<br>
+模式2下不断重复的闭环，在迭代实现最优动作序列规划（当前主观认为的最优不等同于未来主观认为的最优）及其部分实际执行的同时，也实现了评价器以及预测器的迭代优化，后两者的迭代优化为前者的迭代实现提供支撑。<br>
+根据原论文作者Yann LeCun的观点，模式2的这种闭环是“带有滚动时域的模型预测控制（Model Predictive Control，MPC）”的一个实例，并且它与经典实现方式的区别在于，产生世界状态预测序列 ![](https://latex.codecogs.com/svg.latex?s[1],\cdots,s[t+1],\cdots,s[T+1]) 的世界模型模块预测器是可训练的（与预编程相对），产生代价预测序列 ![](https://latex.codecogs.com/svg.latex?\text{C}(s[1]),\cdots,\text{C}(s[t+1]),\cdots,\text{C}(s[T+1])) 的代价模块评价器也是可训练的。
+<br><br><br><br><br><br><br>
+
+# 用模式1近似实现模式2在特定任务中的功能
+
+## 1、最初的“最优动作序列”迭代收敛至真正的最优动作序列
+
+首次面对某个几乎全新的特定任务时，智能体需要掌握针对该任务的新技能，这要求它动用模式2来进行提议动作后果预演以及最优动作序列规划。在规划出当前最优动作序列并部分实际执行之后，智能体可能仍然“感到不满意”（即真实内在代价总和 ![](https://latex.codecogs.com/svg.latex?\text{C}(s^\prime[1])+\cdots+\text{C}(s^\prime[t])) 仍然过高），选择重复模式2的闭环。那么，伴随着评价器以及预测器的迭代优化，该序列还会经过多轮迭代，最终收敛至真正的最优动作序列。<br>
+此时，相比之下，最初规划的“最优动作序列”可能是次优的。<br>
+总之，智能体在首次面对某个几乎全新的任务时，既可能仅仅动用1次模式2闭环，也可能多次重复模式2闭环，以规划出真正的最优动作序列 ![](https://latex.codecogs.com/svg.latex?\check{a}[0],\cdots,\check{a}[t],\cdots,\check{a}[T]) 。
+
+## 2、用模式1近似实现模式2在特定任务中的功能
+
+### 2.1、策略子模块的训练以及摊销推理
+
+现在，针对该任务，智能体已经掌握了真正的最优动作序列。希望设计一种机制，使它以后再次面对（甚至多次重复面对）同样的任务时，无需再动用计算资源耗费较大、耗时较长的模式2，而是借助反应迅速的模式1来近似实现模式2的功能。<br>
+该机制的具体实现方式如下：<br>
+1、感知模块给出 ![](https://latex.codecogs.com/svg.latex?s[0]=\text{Enc}(x[0])) 。<br>
+2、执行模块的策略子模块给出 ![](https://latex.codecogs.com/svg.latex?a[0]=\text{A}(s[0])) ，它将被随即发送到智能体的效应模块并被实际执行。<br>
+3、![](https://latex.codecogs.com/svg.latex?\check{a}[0]) 作为相对于 ![](https://latex.codecogs.com/svg.latex?a[0]) 的监督信号，指导策略子模块的参数调整（将 ![](https://latex.codecogs.com/svg.latex?D(\check{a}[0],a[0])) 的最小化作为训练目标）。<br>
+4、感知模块通过传感器接收到来自所处物理世界的信号 ![](https://latex.codecogs.com/svg.latex?x[1]=\text{World}(x[0],a[0])) ，后续过程同理，![](https://latex.codecogs.com/svg.latex?D(\check{a}[1],a[1])) 的最小化将会作为策略子模块的训练目标。<br>
+5、
