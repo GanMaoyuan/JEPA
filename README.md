@@ -434,3 +434,62 @@ LVEBM的潜变量推断，就是在 ![](https://latex.codecogs.com/svg.latex?x) 
 对比方法在图像、视频等高维数据空间中得以实施的前提在于生成足够多的对比数据点，其数量级可能难以接受。<br>
 换句话说，在高维数据空间中，生成足够多的对比样本就意味着高昂的生成计算成本。<br>
 根据原论文作者Yann LeCun的观点，由于“维度诅咒”（the curse of the dimensionality），在最坏情况下，所需的对比样本的数量可能随数据维度的增长而指数增长。
+<br><br><br><br><br><br><br>
+
+# 联合嵌入预测架构
+
+在后文中，本质上属于LVEBM范畴的联合嵌入预测架构（Joint Embedding Predictive Architecture）将简称为JEPA。<br>
+![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的模态既可以相同，也可以不同。例如，![](https://latex.codecogs.com/svg.latex?x) 是视频的同时，![](https://latex.codecogs.com/svg.latex?y) 既可以是视频，也可以是音频。分别处理 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的编码器 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_x(\cdot),\text{Enc}_y(\cdot)) 既可以具备相同的架构，也可以具备不同的架构。<br>
+
+## 1、JEPA所特有的预测器 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot))
+
+针对某对特定的 ![](https://latex.codecogs.com/svg.latex?x,y) ，它们之间客观地存在众多（在连续高维空间中则为无数多个）可能的关系解释表征（即潜变量）![](https://latex.codecogs.com/svg.latex?z) 。<br>
+JEPA首先通过编码器将像素性的 ![](https://latex.codecogs.com/svg.latex?x,y) 非线性投影到抽象表征空间，得到抽象性的 ![](https://latex.codecogs.com/svg.latex?s_x,s_y) 。<br>
+针对某个可能的 ![](https://latex.codecogs.com/svg.latex?z) ，将它连同 ![](https://latex.codecogs.com/svg.latex?s_x) 一起输入到JEPA所特有的预测器 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) ，输出的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 的内涵可表述为：<br>
+给定初始的世界状态感知表征 ![](https://latex.codecogs.com/svg.latex?s_x) 以及某个可能的“世界状态演化限制框架” ![](https://latex.codecogs.com/svg.latex?z) ，JEPA主观上认为，演化后的世界状态的感知表征将会是 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 。
+
+## 2、![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) 函数的一对一或者多对一性质
+
+![](https://latex.codecogs.com/svg.latex?s_x,s_y) 是固定的，而 ![](https://latex.codecogs.com/svg.latex?z) 是可切换的，不同的 ![](https://latex.codecogs.com/svg.latex?z) 既可能对应相同的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) ，也可能各自唯一对应不同的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 。<br>
+需要特别强调的是，“不确定性”特指作为函数输入之一的 ![](https://latex.codecogs.com/svg.latex?z) 的取值多样性，绝非 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) 函数本身的“映射不确定性”——一对一或者多对一是函数映射的基本性质，不存在“一对多”这种不确定性的说法。倘若一对多，那就不叫函数了。
+
+## 3、能量函数 ![](https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)) 在JEPA中的定义
+
+在JEPA当中，![](https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)) 定义为 ![](https://latex.codecogs.com/svg.latex?s_y=\text{Enc}_y(y)) 与 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 的散度，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)=D(s_y,\text{Pred}(s_x,z)),">
+</p>
+
+其中 ![](https://latex.codecogs.com/svg.latex?s_x=\text{Enc}_x(x)) 。
+
+## 4、JEPA的潜变量推断
+
+在逻辑上，JEPA的潜变量推断流程可描述为：<br>
+1、将所有的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 分别与 ![](https://latex.codecogs.com/svg.latex?s_y) 进行散度计算，分别得到 ![](https://latex.codecogs.com/svg.latex?D(s_y,\text{Pred}(s_x,z))) 。<br>
+2、在所有的 ![](https://latex.codecogs.com/svg.latex?D(s_y,\text{Pred}(s_x,z))) 当中，选择值最小的那一个，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\min_{z\in\mathcal{Z}}D(s_y,\text{Pred}(s_x,z))=D(s_y,\text{Pred}(s_x,\check{z}))=F_\omega(x,y),">
+</p>
+
+其对应的 ![](https://latex.codecogs.com/svg.latex?z) 的取值
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\check{z}=\underset{z\in\mathcal{Z}}{\text{argmin}}\,D(s_y,\text{Pred}(s_x,z))=\underset{z\in\mathcal{Z}}{\text{argmin}}\,E_\omega(x,y,z)">
+</p>
+
+即为 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 之间众多可能的关系解释表征当中，JEPA主观上认为最合理的那个关系解释表征。<br>
+例如，假设 ![](https://latex.codecogs.com/svg.latex?x) 表示“车辆行驶至分岔口”的视频片段，![](https://latex.codecogs.com/svg.latex?y) 表示“车辆行驶至右分叉道路后通过传感器所观察到的沿途风景”，那么最合理的关系解释表征 ![](https://latex.codecogs.com/svg.latex?\check{z}) 将会表示“原来车辆在分岔口选择右转”，而不会表示“原来车辆在分岔口选择左转”，因为左分叉道路的沿途风景与实际观察到的右分叉道路的沿途风景是互相矛盾的，“原来车辆在分岔口选择左转”并不能成为 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 这两个视频片段之间的合理关系解释。<br>
+具体而言，设 ![](https://latex.codecogs.com/svg.latex?z_1) 表征“原来车辆在分岔口选择右转”，![](https://latex.codecogs.com/svg.latex?z_2) 表征“原来车辆在分岔口选择左转”，那么
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?D(s_y,\text{Pred}(s_x,\check{z}))=D(s_y,\text{Pred}(s_x,z_1))\ll{}D(s_y,\text{Pred}(s_x,z_2)),">
+</p>
+
+即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?F_\omega(x,y)=E_\omega(x,y,\check{z})=E_\omega(x,y,z_1)\ll{}E_\omega(x,y,z_2).">
+</p>
+
