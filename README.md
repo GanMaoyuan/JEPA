@@ -362,7 +362,9 @@ LVEBM的潜变量推断，就是在 ![](https://latex.codecogs.com/svg.latex?x) 
 这就意味着，LVEBM失去区分能力，认为所有的 ![](https://latex.codecogs.com/svg.latex?y) 都是合理的。这样的LVEBM在推理时不能表现出任何价值。<br>
 总之，使训练样本数据点的能量相对较低，使非训练样本数据点的能量相对较高，两者共同构成LVEBM的训练目标。
 
-### 3.1、第1种对比损失函数
+## 4、LVEBM的训练：对比方法（contrastive methods）
+
+### 4.1、第1种对比损失函数
 
 第1种对比损失函数设计为
 
@@ -376,4 +378,59 @@ LVEBM的潜变量推断，就是在 ![](https://latex.codecogs.com/svg.latex?x) 
 如果 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})-(F_\omega(x,\hat{y})-F_\omega(x,y))\leq{}0) ，即 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})-F_\omega(x,y)\geq{}m(y,\hat{y})) ，说明能量差 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})-F_\omega(x,y)) 相对 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})) 足够大，![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})) 相对足够高（或者 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 相对足够低），此时无需施加任何损失（损失项为0）。<br>
 以 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})=\mu\lVert{}y-\hat{y}\rVert^2) 为例，上述这种对比损失函数将使得能量景观呈现一种特点：<br>
 非训练数据点与训练数据点的能量差随它们之间距离度量的增长而至少呈现二次增长（grow quadratically）。<br>
-特定数据点（实数或 ![](https://latex.codecogs.com/svg.latex?d) 维实向量）集合所构成的特定数据分布称为“数据流形”（data manifold）。在经过良好雕刻的能量景观当中，山谷与训练数据流形可以产生对应关系。
+特定数据点（实数或 ![](https://latex.codecogs.com/svg.latex?d) 维实向量）集合所构成的特定数据分布称为“数据流形”（data manifold）。在经过良好雕刻的能量景观中，山谷与训练数据流形可以产生对应关系。
+
+### 4.2、第2种对比损失函数
+
+第2种对比损失函数设计为涉及多个对比数据点 ![](https://latex.codecogs.com/svg.latex?(x,\hat{y}[1]),\cdots,(x,\hat{y}[k])) 的
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?L(\omega,x,y,\hat{y}[1],\cdots,\hat{y}[k])=H(F_\omega(x,y),F_\omega(x,\hat{y}[1]),\cdots,F_\omega(x,\hat{y}[k])),">
+</p>
+
+例如
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?L(\omega,x,y,\hat{y}[1],\cdots,\hat{y}[k])=F_\omega(x,y)+\log\left[\exp(-F_\omega(x,y))+\sum_{i=1}^k\exp(-F_\omega(x,\hat{y}[i]))\right],">
+</p>
+
+以下展示其构造过程。<br>
+对于训练数据点 ![](https://latex.codecogs.com/svg.latex?(x,y)) 以及 ![](https://latex.codecogs.com/svg.latex?k) 个对比数据点 ![](https://latex.codecogs.com/svg.latex?(x,\hat{y}[1]),\cdots,(x,\hat{y}[k])) ，定义 ![](https://latex.codecogs.com/svg.latex?(x,y)) 在其中的权重为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?W(x,y)=\frac{\exp(-F_\omega(x,y))}{\exp(-F_\omega(x,y))+\sum_{i=1}^k\exp(-F_\omega(x,\hat{y}[i]))},">
+</p>
+
+两边取对数，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\log{}W(x,y)=-F_\omega(x,y)-\log\left[\exp(-F_\omega(x,y))+\sum_{i=1}^k\exp(-F_\omega(x,\hat{y}[i]))\right],">
+</p>
+
+两边取负号，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?-\log{}W(x,y)=F_\omega(x,y)+\log\left[\exp(-F_\omega(x,y))+\sum_{i=1}^k\exp(-F_\omega(x,\hat{y}[i]))\right].">
+</p>
+
+使 ![](https://latex.codecogs.com/svg.latex?W(x,y)) 较大（甚至接近1），就意味着分式的分子 ![](https://latex.codecogs.com/svg.latex?\exp(-F_\omega(x,y))) 相对较大，而分母
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\exp(-F_\omega(x,y))+\sum_{i=1}^k\exp(-F_\omega(x,\hat{y}[i]))">
+</p>
+
+相对较小，也就进一步意味着训练数据点的能量 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 相对较低，而任意一个对比数据点的能量 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y}[i])) 都相对较高。<br>
+这正好契合LVEBM的训练目标。因此，可以将 ![](https://latex.codecogs.com/svg.latex?W(x,y)) 的负对数 ![](https://latex.codecogs.com/svg.latex?-\log{}W(x,y)) 定义为损失项，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}L(\omega,x,y,\hat{y}[1],\cdots,\hat{y}[k])&=-\log{}W(x,y)\\&=F_\omega(x,y)+\log\left[\exp(-F_\omega(x,y))+\sum_{i=1}^k\exp(-F_\omega(x,\hat{y}[i]))\right],\end{align*}">
+</p>
+
+从而在 ![](https://latex.codecogs.com/svg.latex?W(x,y)) 较大时该损失项较小，在 ![](https://latex.codecogs.com/svg.latex?W(x,y)) 较小时该损失项较大。<br>
+原论文作者Yann LeCun指出，该对比损失函数实例即为InfoNCE。<br>
+
+### 4.3、对比方法的缺陷
+
+对比方法在图像、视频等高维数据空间中得以实施的前提在于生成足够多的对比数据点，其数量级可能难以接受。<br>
+换句话说，在高维数据空间中，生成足够多的对比样本就意味着高昂的生成计算成本。<br>
+根据原论文作者Yann LeCun的观点，由于“维度诅咒”（the curse of the dimensionality），在最坏情况下，所需的对比样本的数量可能随数据维度的增长而指数增长。
