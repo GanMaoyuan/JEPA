@@ -16,7 +16,7 @@
 假如智能体处于“组装/修理/建造”这一类特定任务情景，那么一把锤子会被它感知表征为“可能有用的工具”，而在其他那些与“组装/修理/建造”关联性较弱的任务情景中，这把锤子会被感知表征为“无关紧要的东西”。<br>
 从原论文作者Yann LeCun的立场来看，针对感知模块编码器的这种“任务情景功能化配置”（contextually configuring）行为是由智能体的配置器（configurator）完成的。
 
-## 2、即时动作 ![](https://latex.codecogs.com/svg.latex?a[0\right]=\text{A}(s[0\right]\right))
+## 2、即时动作 ![](https://latex.codecogs.com/svg.latex?a[0]=\text{A}(s[0]))
 
 智能体的执行模块（Actor module）的策略子模块（policy sub-module）接收 ![](https://latex.codecogs.com/svg.latex?s[0]) 作为输入，直接计算并输出动作（action），即 ![](https://latex.codecogs.com/svg.latex?a[0]=\text{A}(s[0])) 。输出的动作称为“动作提议”（action proposal），它将被随即发送到智能体的效应模块（effector module，例如机械臂、机械足等）并被实际执行。<br>
 该过程就相当于一个直接的函数映射，期间没有任何其他模块的参与，因而表现出反应上的迅速性，类似于人类的“条件反射”或者“肌肉记忆”。<br>
@@ -304,4 +304,63 @@
 ## 1、一切智能个体所进行的主观预测行为的本质局限以及不确定性根基
 
 在当前时刻，智能体的感知模块通过传感器接收到来自所处物理世界的信号 ![](https://latex.codecogs.com/svg.latex?x) ，这是刚刚发生并且已经发生的事实；<br>
-在未来时刻，智能体的感知模块通过传感器接收到来自所处物理世界的信号可能为 ![](https://latex.codecogs.com/svg.latex?y) ，这是一种概率性事件，当前并未发生，未来也不保证一定发生，但可以说，未来它有可能发生。
+在未来时刻，智能体的感知模块通过传感器接收到来自所处物理世界的信号可能为 ![](https://latex.codecogs.com/svg.latex?y) ，这是一种概率性事件，当前并未发生，未来也不保证一定发生，但可以说，未来它有可能发生。<br>
+智能体无法直接从 ![](https://latex.codecogs.com/svg.latex?x) 获取足够信息来完全解释为什么会发生 ![](https://latex.codecogs.com/svg.latex?y) ，或者无法直接从 ![](https://latex.codecogs.com/svg.latex?x) 获取足够信息来确定性地推演出 ![](https://latex.codecogs.com/svg.latex?y) 。只要 ![](https://latex.codecogs.com/svg.latex?y) 尚未发生，智能体就不会有100%的把握来判断“ ![](https://latex.codecogs.com/svg.latex?x) 一定会演化为 ![](https://latex.codecogs.com/svg.latex?y) ”。<br>
+根据原论文作者Yann LeCun的观点，这是因为<br>
+1、世界在本质上就是随机的（即“偶然不确定性”，aleatoric uncertainty）。<br>
+2、世界状态感知表征 ![](https://latex.codecogs.com/svg.latex?s[0]) 所包含的关于真实世界状态的信息是不完整的（即“认知不确定性”，epistemic uncertainty）。<br>
+3、世界模型预测器由于重重限制（例如训练数据有限、表征维度/能力有限、计算资源有限等）而远不足以实现“上帝水平”的完美精确预测。<br>
+这三大因素构成了一切智能个体所进行的主观预测行为的本质局限以及不确定性根基，即：<br>
+给定一个初始的物理世界信号 ![](https://latex.codecogs.com/svg.latex?x) ，个体认为它会演化到多种可能的 ![](https://latex.codecogs.com/svg.latex?y) ，演化到每一种可能的 ![](https://latex.codecogs.com/svg.latex?y) 的过程都有（主观上感觉）合理的解释。个体没有办法完全消除这种不确定性，没有办法一口咬定 ![](https://latex.codecogs.com/svg.latex?x) 必然会演化到某个特别的 ![](https://latex.codecogs.com/svg.latex?y) 而必然不会演化到其他的 ![](https://latex.codecogs.com/svg.latex?y) 。
+
+## 2、潜变量能量模型的潜变量推断以及能量景观
+
+如果要让智能体的智能行为更真实、更加具备可解释性、更易于泛化，那么，针对这种根植于智能体智能行为本质的不确定性的数学建模就是绕不开的。<br>
+引入一个“潜变量”（latent variable），即 ![](https://latex.codecogs.com/svg.latex?z) ，用于表征从 ![](https://latex.codecogs.com/svg.latex?x) 演化到 ![](https://latex.codecogs.com/svg.latex?y) 的过程的“合理解释”。<br>
+例如，假设 ![](https://latex.codecogs.com/svg.latex?x) 是人像的正视图，某个可能的 ![](https://latex.codecogs.com/svg.latex?y_1) 是人像的左侧视图，某个可能的 ![](https://latex.codecogs.com/svg.latex?y_2) 是人像的右侧视图，那么<br>
+1、![](https://latex.codecogs.com/svg.latex?z_1) 可以表征“原来相机镜头顺时针绕了90度”这一无法直接从 ![](https://latex.codecogs.com/svg.latex?x) 发掘的潜藏信息（latent information）。<br>
+2、![](https://latex.codecogs.com/svg.latex?z_2) 可以表征“原来相机镜头逆时针绕了90度”这一同样无法直接从 ![](https://latex.codecogs.com/svg.latex?x) 发掘的潜藏信息。<br>
+引入“潜变量能量模型”（Latent-Variable Energy-Based Model，后文简称为LVEBM），即 ![](https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)) ，它本质上是一个用于度量 ![](https://latex.codecogs.com/svg.latex?x,y,z) 三者的“兼容性”的函数（下标 ![](https://latex.codecogs.com/svg.latex?\omega) 表示神经网络参数），其输出是一个标量，表示三者的“不兼容度”或“能量”。<br>
+![](https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)) 的值越大，三者的不兼容性就越严重，兼容性就越差。<br>
+
+### 2.1、潜变量推断
+
+LVEBM的潜变量推断，就是在 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的众多可能的关系解释中，找到相对最合理的关系解释的潜变量表征，换句话说就是在固定一对 ![](https://latex.codecogs.com/svg.latex?x,y) 的前提下，找到使得 ![](https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)) 取得最小值的那个 ![](https://latex.codecogs.com/svg.latex?z) ，记为 ![](https://latex.codecogs.com/svg.latex?\check{z}) ，可以将其称为“最优潜变量”。潜变量推断可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\check{z}=\underset{z\in\mathcal{Z}}{\text{argmin}}\,E_\omega(x,y,z).">
+</p>
+
+在这之后，将推断出的最优潜变量 ![](https://latex.codecogs.com/svg.latex?\check{z}) 代入 ![](https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)) ，从而使后者转化为仅针对 ![](https://latex.codecogs.com/svg.latex?x,y) 两者的兼容性函数，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?F_\omega(x,y)=\min_{z\in\mathcal{Z}}E_\omega(x,y,z)=E_\omega(x,y,\check{z}),">
+</p>
+
+后文依然将其称为能量。
+
+### 2.2、能量景观
+
+无数个 ![](https://latex.codecogs.com/svg.latex?(x,y,F_\omega(x,y))) 坐标点所组成的“三维”景观也称为“能量景观”（energy landscape）。<br>
+“山峰”就是 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 的值较大的坐标点，其所对应的 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的能量（可以理解为“重力势能”）较高，兼容性较差；<br>
+“山谷”就是 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 的值较小的坐标点，其所对应的 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的能量较低，兼容性较好。<br>
+需要澄清的是，能量景观仅仅表征着LVEBM的“世界观”（主观上认为什么是可能的，什么是不可能的），尚不构成LVEBM在实际推理时的直接依据。在后文“联合嵌入预测架构-第2节”这一部分内容当中，将对联合嵌入预测架构（LVEBM的一个实例）的预测性推理（区别于传统意义上的生成式推理）的实际过程及其与能量景观的关系展开进一步澄清。
+
+## 3、LVEBM的训练目标
+
+能量景观是通过训练来“雕刻”（sculpturing）的，能量景观的质量优劣完全取决于训练方式的优劣。<br>
+在训练过程中，能量景观雕刻的基本逻辑在于：<br>
+1、使训练样本数据点 ![](https://latex.codecogs.com/svg.latex?(x,y)) 的能量 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 相对较低。<br>
+2、使非训练样本数据点 ![](https://latex.codecogs.com/svg.latex?(x,\hat{y})) 的能量 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})) 相对较高。<br>
+如果仅仅关注前者而忽略后者，就无法确保每当 ![](https://latex.codecogs.com/svg.latex?\hat{y}\neq{}y) 时 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})>F_\omega(x,y)) 恒成立，此时能量景观可能发生“坍塌”（collapse），即：<br>
+在推理时，给定一个 ![](https://latex.codecogs.com/svg.latex?x) ，它与任意 ![](https://latex.codecogs.com/svg.latex?y) 的能量都一样低，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?F_\omega(x,y_1)\approx\cdots\approx{}F_\omega(x,y_m)\approx\cdots\approx{}F_\omega(x,y_n)\approx{}0.">
+</p>
+
+这就意味着，LVEBM失去区分能力，认为所有的 ![](https://latex.codecogs.com/svg.latex?y) 都是合理的。这样的LVEBM在推理时不能表现出任何价值。<br>
+总之，使训练样本数据点的能量相对较低，使非训练样本数据点的能量相对较高，两者共同构成LVEBM的训练目标。
+
+### 3.1、第1种对比损失函数
+
