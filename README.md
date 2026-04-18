@@ -344,7 +344,7 @@ LVEBM的潜变量推断，就是在 ![](https://latex.codecogs.com/svg.latex?x) 
 无数个 ![](https://latex.codecogs.com/svg.latex?(x,y,F_\omega(x,y))) 坐标点所组成的“三维”景观也称为“能量景观”（energy landscape）。<br>
 “山峰”就是 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 的值较大的坐标点，其所对应的 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的能量（可以理解为“重力势能”）较高，兼容性较差；<br>
 “山谷”就是 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 的值较小的坐标点，其所对应的 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的能量较低，兼容性较好。<br>
-需要澄清的是，能量景观仅仅表征着LVEBM的“世界观”（主观上认为什么是可能的，什么是不可能的），尚不构成LVEBM在实际推理时的直接依据。在后文“联合嵌入预测架构-第2节”这一部分内容当中，将对联合嵌入预测架构（LVEBM的一个实例）的预测性推理（区别于传统意义上的生成式推理）的实际过程及其与能量景观的关系展开进一步澄清。
+需要澄清的是，能量景观仅仅表征着LVEBM的“世界观”（主观上认为什么是可能的，什么是不可能的），尚不构成LVEBM在实际推理时的直接依据。在后文 **“联合嵌入预测架构-第2节”** 这一部分内容当中，将对联合嵌入预测架构（LVEBM的一个实例）的预测性推理（区别于传统意义上的生成式推理）的实际过程及其与能量景观的关系展开进一步澄清。
 
 ## 3、LVEBM的训练目标
 
@@ -364,3 +364,16 @@ LVEBM的潜变量推断，就是在 ![](https://latex.codecogs.com/svg.latex?x) 
 
 ### 3.1、第1种对比损失函数
 
+第1种对比损失函数设计为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}L(\omega,x,y,\hat{y})&=H(F_\omega(x,y),F_\omega(x,\hat{y}),m(y,\hat{y}))\\&=\left[m(y,\hat{y})-(F_\omega(x,\hat{y})-F_\omega(x,y))\right]^+\\&=\begin{cases}m(y,\hat{y})-(F_\omega(x,\hat{y})-F_\omega(x,y)),&m(y,\hat{y})-(F_\omega(x,\hat{y})-F_\omega(x,y))>0\\0,&m(y,\hat{y})-(F_\omega(x,\hat{y})-F_\omega(x,y))\leq{}0\end{cases}\end{align*}">
+</p>
+
+其中 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})) 正比于 ![](https://latex.codecogs.com/svg.latex?y) 与 ![](https://latex.codecogs.com/svg.latex?\hat{y}) 的某种距离度量。例如 ![](https://latex.codecogs.com/svg.latex?\mu\lVert{}y-\hat{y}\rVert^2) ，它正比于 ![](https://latex.codecogs.com/svg.latex?y) 与 ![](https://latex.codecogs.com/svg.latex?\hat{y}) 之差的二范数 ![](https://latex.codecogs.com/svg.latex?\lVert{}y-\hat{y}\rVert^2) 。<br>
+该损失函数的内涵在于，一对相距较远的 ![](https://latex.codecogs.com/svg.latex?y,\hat{y}) ，它们的能量差 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})-F_\omega(x,y)) 应该较大，否则施加损失。<br>
+如果 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})-(F_\omega(x,\hat{y})-F_\omega(x,y))>0) ，即 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})-F_\omega(x,y)<m(y,\hat{y})) ，说明能量差 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})-F_\omega(x,y)) 相对 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})) 太小，![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})) 相对不够高（或者 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 相对不够低），此时就把 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})) 与 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})-F_\omega(x,y)) 的差值 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})-(F_\omega(x,\hat{y})-F_\omega(x,y))) 作为损失项，施加给训练中的LVEBM；<br>
+如果 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})-(F_\omega(x,\hat{y})-F_\omega(x,y))\leq{}0) ，即 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})-F_\omega(x,y)\geq{}m(y,\hat{y})) ，说明能量差 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})-F_\omega(x,y)) 相对 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})) 足够大，![](https://latex.codecogs.com/svg.latex?F_\omega(x,\hat{y})) 相对足够高（或者 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 相对足够低），此时无需施加任何损失（损失项为0）。<br>
+以 ![](https://latex.codecogs.com/svg.latex?m(y,\hat{y})=\mu\lVert{}y-\hat{y}\rVert^2) 为例，上述这种对比损失函数将使得能量景观呈现一种特点：<br>
+非训练数据点与训练数据点的能量差随它们之间距离度量的增长而至少呈现二次增长（grow quadratically）。<br>
+特定数据点（实数或 ![](https://latex.codecogs.com/svg.latex?d) 维实向量）集合所构成的特定数据分布称为“数据流形”（data manifold）。在经过良好雕刻的能量景观当中，山谷与训练数据流形可以产生对应关系。
