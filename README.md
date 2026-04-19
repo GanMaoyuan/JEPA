@@ -506,3 +506,68 @@ JEPA首先通过编码器将像素性的 ![](https://latex.codecogs.com/svg.late
 倘若JEPA的预测行为不具备上述这种特性，根据某个单一的 ![](https://latex.codecogs.com/svg.latex?x) 只能预测出单一的 ![](https://latex.codecogs.com/svg.latex?y) ，那么JEPA将沦为只会机械复刻训练数据场景的预编程机器，其在真实而复杂的物理世界中的泛化性能就将大打折扣。<br>
 “根据某个单一的 ![](https://latex.codecogs.com/svg.latex?x) 预测出多个较为合理的 ![](https://latex.codecogs.com/svg.latex?y) ”所体现的良好预测方式称为“多峰值预测”（multi-modal prediction），它捕捉到了 ![](https://latex.codecogs.com/svg.latex?x) 与多个较为合理的 ![](https://latex.codecogs.com/svg.latex?y) 的依赖关系。原论文作者Yann LeCun将这种依赖关系称为“多峰值依赖关系”（multi-modal dependencies）。<br>
 在逻辑上，所有可能的 ![](https://latex.codecogs.com/svg.latex?y) 组成一个分布，多个较为合理的 ![](https://latex.codecogs.com/svg.latex?y) 拥有较大的“可能度”（可以理解为“未归一化的概率值”，例如能量的负数的指数），从而形成分布上的“多个峰值”。这就是多峰值预测中“多峰值”一词的组词逻辑。
+
+## 4、使JEPA具备良好预测行为特征的关键架构设计
+
+### 4.1、编码器 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_y(\cdot)) 的多对一特性
+
+编码器 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_y(\cdot)) 可以消除 ![](https://latex.codecogs.com/svg.latex?y) 当中的无关细节，仅保留其抽象语义，并用输出的 ![](https://latex.codecogs.com/svg.latex?s_y) 来表征这种抽象语义。<br>
+这就意味着，值不相同的多个 ![](https://latex.codecogs.com/svg.latex?y)（例如局部纹理细节、无关物体细节不同的视频帧）虽然有着各异的无关细节，但在编码器的处理下，有可能具备完全相同的抽象语义。<br>
+也就是说，值不相同的多个 ![](https://latex.codecogs.com/svg.latex?y) 有可能对应同一个 ![](https://latex.codecogs.com/svg.latex?s_y) ，进而可以推知，它们与同一个 ![](https://latex.codecogs.com/svg.latex?x) 所组成的数据点的能量是有可能相同的。<br>
+编码器 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_y(\cdot)) 的这种多对一特性直接支持了JEPA的多峰值预测。
+
+### 4.2、![](https://latex.codecogs.com/svg.latex?z) 在分布空间集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{Z}) 上变化的过程
+
+“固定一对 ![](https://latex.codecogs.com/svg.latex?x,y) ，推断 ![](https://latex.codecogs.com/svg.latex?z) ”的最优潜变量推断视角，可以拓展为“固定 ![](https://latex.codecogs.com/svg.latex?x) ，将每1个 ![](https://latex.codecogs.com/svg.latex?z) 均视为最优潜变量，反向推断出与之适配的 ![](https://latex.codecogs.com/svg.latex?y) ”这种前向输出性的视角。后者并未与前者产生逻辑上的矛盾。<br>
+当 ![](https://latex.codecogs.com/svg.latex?z) 在集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{Z}) 上变化时，每1个 ![](https://latex.codecogs.com/svg.latex?z) 都会产生1个 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z))（不同的 ![](https://latex.codecogs.com/svg.latex?z) 既可能产生相同的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) ，也可能产生不同的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) ），与之对应的最适配的某些 ![](https://latex.codecogs.com/svg.latex?y) 所对应的同1个 ![](https://latex.codecogs.com/svg.latex?s_y) 满足
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?s_y=\tilde{s}_y=\text{Pred}(s_x,z).">
+</p>
+
+
+由于 ![](https://latex.codecogs.com/svg.latex?s_y) 与 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 相等，它们的散度 ![](https://latex.codecogs.com/svg.latex?D(s_y,\tilde{s}_y)=0) ，进而有
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)=D(s_y,\text{Pred}(s_x,z))=D(s_y,\tilde{s}_y)=0,">
+</p>
+
+也就是说，固定的 ![](https://latex.codecogs.com/svg.latex?x) 、最优潜变量 ![](https://latex.codecogs.com/svg.latex?z) 、最适配的 ![](https://latex.codecogs.com/svg.latex?y) 这三者的能量为0，是最低的。能量不可能为负数，因为散度永远大于等于0，小于0无意义。<br>
+简而言之，针对某个单一的 ![](https://latex.codecogs.com/svg.latex?x) ，![](https://latex.codecogs.com/svg.latex?z) 的数量可以很多；针对每1个 ![](https://latex.codecogs.com/svg.latex?z) ，它会对应1个 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z))（取值可能重复），进而对应1个 ![](https://latex.codecogs.com/svg.latex?s_y) ，进而对应**一群** ![](https://latex.codecogs.com/svg.latex?y) 。<br>
+与集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{Z}) 对应，众多 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 也组成一个集合，可表示为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\{\tilde{s}_y=\text{Pred}(s_x,z),\forall{}z\in\mathcal{Z}\},">
+</p>
+
+可简记为 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(s_x,\mathcal{Z})) 。<br>
+![](https://latex.codecogs.com/svg.latex?z) 在分布空间集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{Z}) 上变化的过程间接支持了JEPA的多峰值预测。
+<br><br><br><br><br><br><br>
+
+# JEPA的训练目标
+
+JEPA作为LVEBM的一个实例，其训练目标依然没有脱离“使训练数据点的能量相对较低，使非训练数据点的能量相对较高”这一范畴。<br>
+针对JEPA，“使训练数据点的能量相对较低”这一训练子目标实际上可以等价解读为“使JEPA的前向输出 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 在训练过程中逐渐趋同于 ![](https://latex.codecogs.com/svg.latex?s_y) ”，那么该训练子目标对应的损失项实际上即为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?L_1=D(s_y,\tilde{s}_y).">
+</p>
+
+差值的二范数 ![](https://latex.codecogs.com/svg.latex?\lVert\cdot-\cdot\rVert^2) 可以作为散度 ![](https://latex.codecogs.com/svg.latex?D(\cdot,\cdot)) 的实例。<br>
+在后文中，将散度具体指定为差值的二范数，第1个训练子目标所对应的损失项指定为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?L_1=\lVert{}s_y-\tilde{s}_y\rVert^2.">
+</p>
+
+<br><br><br><br>
+
+# JEPA的训练：VICReg
+
+JEPA可以使用对比方法进行训练，但前文 **“潜变量能量模型-第4节-第4.3小节”** 已经指出对比方法的缺陷，现在希望探索出一种全新的训练方法。
+
+## 1、单一损失项 ![](https://latex.codecogs.com/svg.latex?L_1=\lVert{}s_y-\tilde{s}_y\rVert^2) 的根本局限
+
+JEPA的训练遵循4项原则，前两项分别为：<br>
+1、在某种前提下，使 ![](https://latex.codecogs.com/svg.latex?s_x) 所包含的关于 ![](https://latex.codecogs.com/svg.latex?x) 的信息内容最大化（尽可能完整包含有关 ![](https://latex.codecogs.com/svg.latex?x) 的信息）。<br>
+2、在同一前提下，使 ![](https://latex.codecogs.com/svg.latex?s_y) 所包含的关于 ![](https://latex.codecogs.com/svg.latex?y) 的信息内容最大化（尽可能完整包含有关 ![](https://latex.codecogs.com/svg.latex?y) 的信息）。<br>
