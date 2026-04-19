@@ -6,7 +6,7 @@
 ## 1、世界状态 ![](https://latex.codecogs.com/svg.latex?s[0]=\text{Enc}(x))
 
 将智能体所处的“当前时刻”定义为 ![](https://latex.codecogs.com/svg.latex?t=0) ，区别于 ![](https://latex.codecogs.com/svg.latex?t=1,t=2) 等“未来时刻”。<br>
-智能体（agent）的感知模块（perception module）通过传感器（sensor，例如摄像头）接收到来自所处物理世界（physical world）的信号（signal），即 ![](https://latex.codecogs.com/svg.latex?x[0])（方括号内的 ![](https://latex.codecogs.com/svg.latex?0) 指示“当前时刻”，在后文中，![](https://latex.codecogs.com/svg.latex?x[0]) 简记为 ![](https://latex.codecogs.com/svg.latex?x) ），例如由十的若干次方数量级的大量像素通道值所表示的一张高清实时帧（可记为 ![](https://latex.codecogs.com/svg.latex?x\in\mathbb{R}^d) ），并通过编码器（Encoder）对其进行处理，从而提取出智能体自己对自己所处物理世界的状态（world state）的感知（perception，带有主观性，区别于信号 ![](https://latex.codecogs.com/svg.latex?x) 的客观性，主观性意味着不可完全克服的“认知偏差”）的表征，即
+智能体（agent）的感知模块（perception module）通过传感器（sensor，例如摄像头）接收到来自所处物理世界（physical world）的信号（signal），即 ![](https://latex.codecogs.com/svg.latex?x[0])（方括号内的 ![](https://latex.codecogs.com/svg.latex?0) 指示“当前时刻”，在后文中，![](https://latex.codecogs.com/svg.latex?x[0]) 简记为 ![](https://latex.codecogs.com/svg.latex?x) ），例如由十的若干次方数量级的大量像素通道值所表示的一张高清实时帧（可记为 ![](https://latex.codecogs.com/svg.latex?x\in\mathbb{R}^{d_{\text{frame}}}) ），并通过编码器（Encoder）对其进行处理，从而提取出智能体自己对自己所处物理世界的状态（world state）的感知（perception，带有主观性，区别于信号 ![](https://latex.codecogs.com/svg.latex?x) 的客观性，主观性意味着不可完全克服的“认知偏差”）的表征，即
 
 <p align="center">
 <img src="https://latex.codecogs.com/svg.latex?s[0]=\text{Enc}(x).">
@@ -587,4 +587,30 @@ JEPA的训练遵循4项原则，前两项分别为：<br>
 本小节暂时搁置对新损失项的探索，转而聚焦于JEPA预测性推理的实际过程及其与能量景观的关系。<br>
 假设JEPA的训练方式恰当，训练效果良好，训练数据点的能量相对较低，在能量景观当中形成了训练数据流形；同时，非训练数据点的能量相对较高。总之，假设能量景观并未坍塌为平原。<br>
 在此之后，JEPA开始在真实的物理世界中执行预测性推理任务。<br>
-现在，输入 ![](https://latex.codecogs.com/svg.latex?x) ，针对相应数据模态的编码器将会输出 ![](https://latex.codecogs.com/svg.latex?s_x=\text{Enc}_x(x)) ；将 ![](https://latex.codecogs.com/svg.latex?s_x) 连同 ![](https://latex.codecogs.com/svg.latex?z) 作为预测器的输入，预测器将会输出 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 。
+现在，输入 ![](https://latex.codecogs.com/svg.latex?x) ，针对相应数据模态的编码器将会输出 ![](https://latex.codecogs.com/svg.latex?s_x=\text{Enc}_x(x)) ；将 ![](https://latex.codecogs.com/svg.latex?s_x) 连同 ![](https://latex.codecogs.com/svg.latex?z) 作为预测器的输入，预测器将会输出 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 。<br>
+![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 所对应的一群 ![](https://latex.codecogs.com/svg.latex?\tilde{y}) ，各自与 ![](https://latex.codecogs.com/svg.latex?x) 所组成的数据点，在逻辑上构成对（已经过良好训练雕刻的）能量景观的采样结果，这些样本数据点位于能量景观中的训练数据流形（即谷底）。<br>
+在实际的预测性推理过程中，并未发生对低能量数据点 ![](https://latex.codecogs.com/svg.latex?(x,y)) 的采样。这一步骤在物理层面上是不存在的，仅存在于逻辑层面。<br>
+JEPA基于 ![](https://latex.codecogs.com/svg.latex?s_x) ，借助 ![](https://latex.codecogs.com/svg.latex?z) ，输出的对象实际上是抽象语义层面上的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) ，并非像素细节层面上的 ![](https://latex.codecogs.com/svg.latex?\tilde{y}) 。这从根本上否定了“在能量景观中对低能量数据点 ![](https://latex.codecogs.com/svg.latex?(x,y)) 进行采样”的物理实在性。<br>
+进一步地说，JEPA在推理时所执行的任务是对未来帧 ![](https://latex.codecogs.com/svg.latex?\tilde{y}) 的抽象语义表征 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 的预测（predicting），而非对未来帧 ![](https://latex.codecogs.com/svg.latex?\tilde{y}) 的直接采样（sampling）或者生成（generating）。对未来帧的直接采样或生成也可以理解为对未来帧的每一处像素细节的“预测”，这在本质上是困难的，原论文作者Yann LeCun认为并不可取。<br>
+实际上，对未来帧的直接采样或生成属于以Diffusion为代表的生成式模型的任务范畴；而JEPA的任务与之相对，是对未来帧抽象语义表征的预测。<br>
+原论文作者Yann LeCun明确指出，在视频预测场景中，对未来每一帧的每个像素（通道）值的预测在本质上就是不可能的，“地毯纹理的细节、树上迎风颤动的树叶或者池塘上的涟漪，是无法被准确预测的，至少无法在不消耗巨量计算资源的同时被长时间准确预测”。<br>
+此外还需澄清以下两点：<br>
+1、在训练时，JEPA通过损失项 ![](https://latex.codecogs.com/svg.latex?L_1=\lVert{}s_y-\text{Pred}(s_x,z)\rVert^2) ，得以接收来自训练样本“未来帧”（此处定义为在训练样本视频中相对于当前时刻帧的时序较为靠后的帧，对接受训练的JEPA而言是已知而可见的）![](https://latex.codecogs.com/svg.latex?y) 的抽象语义表征 ![](https://latex.codecogs.com/svg.latex?s_y) 的信息，此时 ![](https://latex.codecogs.com/svg.latex?s_y) 本质上是监督信号/标签。<br>
+2、而在预测性推理时，真实物理世界的未来帧 ![](https://latex.codecogs.com/svg.latex?y) 对当前时刻的JEPA而言还根本不存在，也就没有“接收 ![](https://latex.codecogs.com/svg.latex?s_y) 的信息”这种说法。JEPA的预测性推理其实也根本不依赖于 ![](https://latex.codecogs.com/svg.latex?y) 或 ![](https://latex.codecogs.com/svg.latex?s_y)（过去不可能依赖未来），只需接收 ![](https://latex.codecogs.com/svg.latex?s_x,z) 的信息并进行一次前向计算
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)">
+</p>
+
+即可实现。
+
+## 3、新损失项 ![](https://latex.codecogs.com/svg.latex?L_2,L_3,L_4)
+
+后文以 ![](https://latex.codecogs.com/svg.latex?s_x) 为例，![](https://latex.codecogs.com/svg.latex?s_y) 与之完全同理。<br>
+设训练样本批次（Batch）的大小为 ![](https://latex.codecogs.com/svg.latex?N) ，该批次内训练样本的数量即为 ![](https://latex.codecogs.com/svg.latex?N) 。该批次内的 ![](https://latex.codecogs.com/svg.latex?N) 个训练样本 ![](https://latex.codecogs.com/svg.latex?x) 经编码器处理后，得到 ![](https://latex.codecogs.com/svg.latex?N) 个 ![](https://latex.codecogs.com/svg.latex?s_x) 。<br>
+这 ![](https://latex.codecogs.com/svg.latex?N) 个 ![](https://latex.codecogs.com/svg.latex?s_x\in\mathbb{R}^d) 所组成的矩阵可表示为 ![](https://latex.codecogs.com/svg.latex?B_1\in\mathbb{R}^{N\times{}d}) 。<br>
+可以合理推测，如果要使 ![](https://latex.codecogs.com/svg.latex?s_x\in\mathbb{R}^d) 所包含的关于 ![](https://latex.codecogs.com/svg.latex?x) 的信息内容最大化，那么，在批次统计尺度上，![](https://latex.codecogs.com/svg.latex?s_x\in\mathbb{R}^d) 的各分量应该具备以下两个特征：<br>
+1、不恒定（ ![](https://latex.codecogs.com/svg.latex?B_1\in\mathbb{R}^{N\times{}d}) 任意一列的 ![](https://latex.codecogs.com/svg.latex?N) 个元素不完全相同，它们的标准差统计量不为0）。<br>
+2、独立（ ![](https://latex.codecogs.com/svg.latex?B_1\in\mathbb{R}^{N\times{}d}) 任意一行 ![](https://latex.codecogs.com/svg.latex?s_x\in\mathbb{R}^d) 的不同分量之间既保持线性不相关，也进一步保持非线性不相关，确保不同的维度不会重复携带相同信息）。
+
+### 3.1、![](https://latex.codecogs.com/svg.latex?L_2) 的引入
