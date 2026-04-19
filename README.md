@@ -343,7 +343,7 @@ LVEBM的潜变量推断，就是在 ![](https://latex.codecogs.com/svg.latex?x) 
 无数个 ![](https://latex.codecogs.com/svg.latex?(x,y,F_\omega(x,y))) 坐标点所组成的“三维”景观也称为“能量景观”（energy landscape）。<br>
 “山峰”就是 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 的值较大的坐标点，其所对应的 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的能量（可以理解为“重力势能”）较高，兼容性较差；<br>
 “山谷”就是 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 的值较小的坐标点，其所对应的 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的能量较低，兼容性较好。<br>
-需要澄清的是，能量景观仅仅表征着LVEBM的“世界观”（主观上认为什么是可能的，什么是不可能的），尚不构成LVEBM在实际推理时的直接依据。在后文 **“联合嵌入预测架构-第节”** 这一部分内容当中，将对联合嵌入预测架构（LVEBM的一个实例）的预测性推理（区别于传统意义上的生成式推理）的实际过程及其与能量景观的关系展开进一步澄清。
+需要澄清的是，能量景观仅仅表征着LVEBM的“世界观”（主观上认为什么是可能的，什么是不可能的），尚不构成LVEBM在实际推理时的直接依据。在后文 **“JEPA的训练：VICReg-第2节”** 这一部分内容当中，将对联合嵌入预测架构（LVEBM的一个实例）的预测性推理（区别于传统意义上的生成式推理）的实际过程及其与能量景观的关系展开进一步澄清。
 
 ## 3、LVEBM的训练目标
 
@@ -571,3 +571,20 @@ JEPA可以使用对比方法进行训练，但前文 **“潜变量能量模型-
 JEPA的训练遵循4项原则，前两项分别为：<br>
 1、在某种前提下，使 ![](https://latex.codecogs.com/svg.latex?s_x) 所包含的关于 ![](https://latex.codecogs.com/svg.latex?x) 的信息内容最大化（尽可能完整包含有关 ![](https://latex.codecogs.com/svg.latex?x) 的信息）。<br>
 2、在同一前提下，使 ![](https://latex.codecogs.com/svg.latex?s_y) 所包含的关于 ![](https://latex.codecogs.com/svg.latex?y) 的信息内容最大化（尽可能完整包含有关 ![](https://latex.codecogs.com/svg.latex?y) 的信息）。<br>
+倘若不对 ![](https://latex.codecogs.com/svg.latex?s_x,s_y) 这两个表征向量的各分量取值在全体训练样本（训练数据点 ![](https://latex.codecogs.com/svg.latex?(x,y)) ）批次的尺度上施加任何限制（不施加某种损失项），那么既然JEPA的训练子目标是使 ![](https://latex.codecogs.com/svg.latex?L_1=\lVert{}s_y-\tilde{s}_y\rVert^2) 最小化，在训练过程中JEPA完全有可能将 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_y(\cdot)) 的参数 ![](https://latex.codecogs.com/svg.latex?\omega_{\text{Enc}_y}) 以及 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_x(\cdot)) 的参数 ![](https://latex.codecogs.com/svg.latex?\omega_{\text{Enc}_x}) 最终调整至某个状态，使得 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_y(\cdot)) 对一切样本输入 ![](https://latex.codecogs.com/svg.latex?y) 都恒定输出一个完全相同的 ![](https://latex.codecogs.com/svg.latex?\hat{s}_y) ，![](https://latex.codecogs.com/svg.latex?\text{Enc}_x(\cdot)) 对一切样本输入 ![](https://latex.codecogs.com/svg.latex?x) 也同样都恒定输出一个完全相同的 ![](https://latex.codecogs.com/svg.latex?\hat{s}_x) ，并将 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) 的参数 ![](https://latex.codecogs.com/svg.latex?\omega_{\text{Pred}}) 最终调整至某个状态，使得 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\hat{s}_x,\cdot)) 对一切输入 ![](https://latex.codecogs.com/svg.latex?z) 都恒定输出 ![](https://latex.codecogs.com/svg.latex?\hat{s}_y) ，此时
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}L_1&=\lVert{}s_y-\text{Pred}(s_x,z)\rVert^2\\&=\lVert\text{Enc}_y(y)-\text{Pred}(\text{Enc}_x(x),z)\rVert^2\\&=\lVert\hat{s}_y-\text{Pred}(\hat{s}_x,z)\rVert^2\\&=\lVert\hat{s}_y-\hat{s}_y\rVert^2\\&=0.\end{align*}">
+</p>
+
+换句话说，倘若不对 ![](https://latex.codecogs.com/svg.latex?s_x,s_y) 这两个表征向量的各分量取值在全体训练样本批次的尺度上施加任何限制，那么在训练过程中，JEPA完全有可能演化到一种状态，在该状态下，它完全无视不同样本 ![](https://latex.codecogs.com/svg.latex?(x,y)) 之间的具体差异，完全没有对 ![](https://latex.codecogs.com/svg.latex?x,y) 进行有意义的特征提取（ ![](https://latex.codecogs.com/svg.latex?s_x) 所包含的关于 ![](https://latex.codecogs.com/svg.latex?x) 的信息内容等同于空白，也就是完全不包含，![](https://latex.codecogs.com/svg.latex?s_y) 同理），却同样能“完美”达成训练子目标（即达成 ![](https://latex.codecogs.com/svg.latex?L_1=0) ）。<br>
+由于JEPA的参数组 ![](https://latex.codecogs.com/svg.latex?\omega_{\text{Enc}_x},\omega_{\text{Enc}_y},\omega_{\text{Pred}}) 最终收敛至上述这种病理性的状态（对一切输入都恒定输出同一个值），此时JEPA可以理解为学习到了“任何 ![](https://latex.codecogs.com/svg.latex?(x,y)) 的能量都是0，这与它是否出现在我的训练集当中无关”这种完全错误的观念。<br>
+换句话说，表征着JEPA“世界观”的能量景观坍塌为“所有地点的能量值均为0的平原”，此时JEPA失去区分能力，认为所有的 ![](https://latex.codecogs.com/svg.latex?(x,y)) 都是兼容的。这样的JEPA在预测性推理时不能表现出任何价值。<br>
+总之，前文提到的诸多因素共同构成了 ![](https://latex.codecogs.com/svg.latex?L_1=\lVert{}s_y-\tilde{s}_y\rVert^2) 的根本局限，添加新的损失项势在必行。
+
+## 2、JEPA预测性推理的实际过程及其与能量景观的关系
+
+本小节暂时搁置对新损失项的探索，转而聚焦于JEPA预测性推理的实际过程及其与能量景观的关系。<br>
+假设JEPA的训练方式恰当，训练效果良好，训练数据点的能量相对较低，在能量景观当中形成了训练数据流形；同时，非训练数据点的能量相对较高。总之，假设能量景观并未坍塌为平原。<br>
+在此之后，JEPA开始在真实的物理世界中执行预测性推理任务。<br>
+现在，输入 ![](https://latex.codecogs.com/svg.latex?x) ，针对相应数据模态的编码器将会输出 ![](https://latex.codecogs.com/svg.latex?s_x=\text{Enc}_x(x)) ；将 ![](https://latex.codecogs.com/svg.latex?s_x) 连同 ![](https://latex.codecogs.com/svg.latex?z) 作为预测器的输入，预测器将会输出 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 。
