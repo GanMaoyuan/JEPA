@@ -67,8 +67,7 @@
 <img src="https://latex.codecogs.com/svg.latex?f^\prime[1]=\text{C}(s^\prime[1]),">
 </p>
 
-它的内涵可以表述为：<br>
-智能体在 ![](https://latex.codecogs.com/svg.latex?t=1) 时刻对世界状态的主观感知 ![](https://latex.codecogs.com/svg.latex?s^\prime[1]) 的“不舒适度”（discomfort），或者智能体在 ![](https://latex.codecogs.com/svg.latex?t=1) 时刻对世界状态所具备的“自由能”（free energy）的主观衡量结果。它是一个标量，不同数值之间有明确的大小关系（区别于不可直接进行大小比较的向量）。智能体被架构性地设计（例如梯度下降，Descent Gradient）为“倾向于”降低不舒适度/自由能。<br>
+它的内涵可以表述为：智能体在 ![](https://latex.codecogs.com/svg.latex?t=1) 时刻对世界状态的主观感知 ![](https://latex.codecogs.com/svg.latex?s^\prime[1]) 的“不舒适度”（discomfort），或者智能体在 ![](https://latex.codecogs.com/svg.latex?t=1) 时刻对世界状态所具备的“自由能”（free energy）的主观衡量结果。它是一个标量，不同数值之间有明确的大小关系（区别于不可直接进行大小比较的向量）。智能体被架构性地设计（例如梯度下降，Descent Gradient）为“倾向于”降低不舒适度/自由能。<br>
 在后文中，不舒适度/自由能简称为代价。<br>
 
 ### 5.2、梯度 ![](https://latex.codecogs.com/svg.latex?\frac{\partial{}f^\prime[1]}{\partial{}a[0]})
@@ -344,7 +343,7 @@ LVEBM的潜变量推断，就是在 ![](https://latex.codecogs.com/svg.latex?x) 
 无数个 ![](https://latex.codecogs.com/svg.latex?(x,y,F_\omega(x,y))) 坐标点所组成的“三维”景观也称为“能量景观”（energy landscape）。<br>
 “山峰”就是 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 的值较大的坐标点，其所对应的 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的能量（可以理解为“重力势能”）较高，兼容性较差；<br>
 “山谷”就是 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 的值较小的坐标点，其所对应的 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 的能量较低，兼容性较好。<br>
-需要澄清的是，能量景观仅仅表征着LVEBM的“世界观”（主观上认为什么是可能的，什么是不可能的），尚不构成LVEBM在实际推理时的直接依据。在后文 **“联合嵌入预测架构-第2节”** 这一部分内容当中，将对联合嵌入预测架构（LVEBM的一个实例）的预测性推理（区别于传统意义上的生成式推理）的实际过程及其与能量景观的关系展开进一步澄清。
+需要澄清的是，能量景观仅仅表征着LVEBM的“世界观”（主观上认为什么是可能的，什么是不可能的），尚不构成LVEBM在实际推理时的直接依据。在后文 **“联合嵌入预测架构-第节”** 这一部分内容当中，将对联合嵌入预测架构（LVEBM的一个实例）的预测性推理（区别于传统意义上的生成式推理）的实际过程及其与能量景观的关系展开进一步澄清。
 
 ## 3、LVEBM的训练目标
 
@@ -443,17 +442,20 @@ LVEBM的潜变量推断，就是在 ![](https://latex.codecogs.com/svg.latex?x) 
 
 ## 1、JEPA所特有的预测器 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot))
 
+### 1.1、![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) 的引入
+
 针对某对特定的 ![](https://latex.codecogs.com/svg.latex?x,y) ，它们之间客观地存在众多（在连续高维空间中则为无数多个）可能的关系解释表征（即潜变量）![](https://latex.codecogs.com/svg.latex?z) 。<br>
 JEPA首先通过编码器将像素性的 ![](https://latex.codecogs.com/svg.latex?x,y) 非线性投影到抽象表征空间，得到抽象性的 ![](https://latex.codecogs.com/svg.latex?s_x,s_y) 。<br>
-针对某个可能的 ![](https://latex.codecogs.com/svg.latex?z) ，将它连同 ![](https://latex.codecogs.com/svg.latex?s_x) 一起输入到JEPA所特有的预测器 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) ，输出的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 的内涵可表述为：<br>
-给定初始的世界状态感知表征 ![](https://latex.codecogs.com/svg.latex?s_x) 以及某个可能的“世界状态演化限制框架” ![](https://latex.codecogs.com/svg.latex?z) ，JEPA主观上认为，演化后的世界状态的感知表征将会是 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 。
+针对某个可能的 ![](https://latex.codecogs.com/svg.latex?z) ，将它连同 ![](https://latex.codecogs.com/svg.latex?s_x) 一起输入到JEPA所特有的预测器 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) ，输出的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 的内涵可表述为：给定初始的世界状态感知表征 ![](https://latex.codecogs.com/svg.latex?s_x) 以及某个可能的“世界状态演化限制框架” ![](https://latex.codecogs.com/svg.latex?z) ，JEPA主观上认为，演化后的世界状态的感知表征将会是 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 。
 
-## 2、![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) 函数的一对一或者多对一性质
+### 1.2、![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) 的一对一或者多对一性质
 
 ![](https://latex.codecogs.com/svg.latex?s_x,s_y) 是固定的，而 ![](https://latex.codecogs.com/svg.latex?z) 是可切换的，不同的 ![](https://latex.codecogs.com/svg.latex?z) 既可能对应相同的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) ，也可能各自唯一对应不同的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 。<br>
 需要特别强调的是，“不确定性”特指作为函数输入之一的 ![](https://latex.codecogs.com/svg.latex?z) 的取值多样性，绝非 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) 函数本身的“映射不确定性”——一对一或者多对一是函数映射的基本性质，不存在“一对多”这种不确定性的说法。倘若一对多，那就不叫函数了。
 
-## 3、能量函数 ![](https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)) 在JEPA中的定义
+## 2、JEPA的潜变量推断
+
+### 2.1、能量函数 ![](https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)) 在JEPA中的定义
 
 在JEPA当中，![](https://latex.codecogs.com/svg.latex?E_\omega(x,y,z)) 定义为 ![](https://latex.codecogs.com/svg.latex?s_y=\text{Enc}_y(y)) 与 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 的散度，即
 
@@ -463,7 +465,7 @@ JEPA首先通过编码器将像素性的 ![](https://latex.codecogs.com/svg.late
 
 其中 ![](https://latex.codecogs.com/svg.latex?s_x=\text{Enc}_x(x)) 。
 
-## 4、JEPA的潜变量推断
+### 2.2、JEPA的潜变量推断
 
 在逻辑上，JEPA的潜变量推断流程可描述为：<br>
 1、将所有的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)) 分别与 ![](https://latex.codecogs.com/svg.latex?s_y) 进行散度计算，分别得到 ![](https://latex.codecogs.com/svg.latex?D(s_y,\text{Pred}(s_x,z))) 。<br>
@@ -480,7 +482,11 @@ JEPA首先通过编码器将像素性的 ![](https://latex.codecogs.com/svg.late
 </p>
 
 即为 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 之间众多可能的关系解释表征当中，JEPA主观上认为最合理的那个关系解释表征。<br>
-例如，假设 ![](https://latex.codecogs.com/svg.latex?x) 表示“车辆行驶至分岔口”的视频片段，![](https://latex.codecogs.com/svg.latex?y) 表示“车辆行驶至右分叉道路后通过传感器所观察到的沿途风景”，那么最合理的关系解释表征 ![](https://latex.codecogs.com/svg.latex?\check{z}) 将会表示“原来车辆在分岔口选择右转”，而不会表示“原来车辆在分岔口选择左转”，因为左分叉道路的沿途风景与实际观察到的右分叉道路的沿途风景是互相矛盾的，“原来车辆在分岔口选择左转”并不能成为 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 这两个视频片段之间的合理关系解释。<br>
+此外，由于不同的 ![](https://latex.codecogs.com/svg.latex?z) 对应相同的 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(s_x,z)) 这种多对一情形是可能存在的，最优潜变量 ![](https://latex.codecogs.com/svg.latex?\check{z}) 不一定只有唯一一个，值不相同的多个 ![](https://latex.codecogs.com/svg.latex?\check{z}) 可以同时成为最合理的关系解释表征。
+
+### 2.3、举例
+
+假设 ![](https://latex.codecogs.com/svg.latex?x) 表示“车辆行驶至分岔口”的视频片段，![](https://latex.codecogs.com/svg.latex?y) 表示“车辆行驶至右分叉道路后通过传感器所观察到的沿途风景”，那么最合理的关系解释表征 ![](https://latex.codecogs.com/svg.latex?\check{z}) 将会表示“原来车辆在分岔口选择右转”，而不会表示“原来车辆在分岔口选择左转”，因为左分叉道路的沿途风景将与实际观察到的右分叉道路的沿途风景产生矛盾，“原来车辆在分岔口选择左转”并不能成为 ![](https://latex.codecogs.com/svg.latex?x) 与 ![](https://latex.codecogs.com/svg.latex?y) 这两个视频片段之间的合理关系解释。<br>
 具体而言，设 ![](https://latex.codecogs.com/svg.latex?z_1) 表征“原来车辆在分岔口选择右转”，![](https://latex.codecogs.com/svg.latex?z_2) 表征“原来车辆在分岔口选择左转”，那么
 
 <p align="center">
@@ -493,3 +499,10 @@ JEPA首先通过编码器将像素性的 ![](https://latex.codecogs.com/svg.late
 <img src="https://latex.codecogs.com/svg.latex?F_\omega(x,y)=E_\omega(x,y,\check{z})=E_\omega(x,y,z_1)\ll{}E_\omega(x,y,z_2).">
 </p>
 
+## 3、JEPA良好预测行为的特征
+
+对于身处真实物理世界并时时刻刻执行预测任务的JEPA而言，其良好的预测行为特征应该体现为：根据某个单一的 ![](https://latex.codecogs.com/svg.latex?x) ，借助潜变量 ![](https://latex.codecogs.com/svg.latex?z) ，预测出多个（而非仅仅1个）较为合理的 ![](https://latex.codecogs.com/svg.latex?y) 。<br>
+这就意味着，对于JEPA而言，其良好的能量景观应该具备的一种特征将会体现为：对于某个单一的 ![](https://latex.codecogs.com/svg.latex?x) ，存在多个（而非仅仅1个）![](https://latex.codecogs.com/svg.latex?y) ，使数据点 ![](https://latex.codecogs.com/svg.latex?(x,y)) 的能量 ![](https://latex.codecogs.com/svg.latex?F_\omega(x,y)) 相等且较低。<br>
+倘若JEPA的预测行为不具备上述这种特性，根据某个单一的 ![](https://latex.codecogs.com/svg.latex?x) 只能预测出单一的 ![](https://latex.codecogs.com/svg.latex?y) ，那么JEPA将沦为只会机械复刻训练数据场景的预编程机器，其在真实而复杂的物理世界中的泛化性能就将大打折扣。<br>
+“根据某个单一的 ![](https://latex.codecogs.com/svg.latex?x) 预测出多个较为合理的 ![](https://latex.codecogs.com/svg.latex?y) ”所体现的良好预测方式称为“多峰值预测”（multi-modal prediction），它捕捉到了 ![](https://latex.codecogs.com/svg.latex?x) 与多个较为合理的 ![](https://latex.codecogs.com/svg.latex?y) 的依赖关系。原论文作者Yann LeCun将这种依赖关系称为“多峰值依赖关系”（multi-modal dependencies）。<br>
+在逻辑上，所有可能的 ![](https://latex.codecogs.com/svg.latex?y) 组成一个分布，多个较为合理的 ![](https://latex.codecogs.com/svg.latex?y) 拥有较大的“可能度”（可以理解为“未归一化的概率值”，例如能量的负数的指数），从而形成分布上的“多个峰值”。这就是多峰值预测中“多峰值”一词的组词逻辑。
