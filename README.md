@@ -740,4 +740,76 @@ JEPA训练遵循的第4项原则为：使潜变量 ![](https://latex.codecogs.co
 <img src="https://latex.codecogs.com/svg.latex?L_5=R(z)=\alpha\lVert{}z\rVert_1,">
 </p>
 
-其中 ![](https://latex.codecogs.com/svg.latex?\lVert{}z\rVert_1) 表示 ![](https://latex.codecogs.com/svg.latex?z) 的一范数（即各分量绝对值之和），![](https://latex.codecogs.com/svg.latex?\alpha>0) 为超参数，用于调节该损失项的“强度”。
+其中 ![](https://latex.codecogs.com/svg.latex?\lVert{}z\rVert_1) 表示 ![](https://latex.codecogs.com/svg.latex?z) 的一范数（即各分量绝对值之和），![](https://latex.codecogs.com/svg.latex?\alpha>0) 为超参数，用于调节该损失项的“强度”。<br>
+设 ![](https://latex.codecogs.com/svg.latex?s_x,s_y\in\mathbb{R}^m,z\in\mathbb{R}^n) ，注意与前文中设定的 ![](https://latex.codecogs.com/svg.latex?s_x,s_y\in\mathbb{R}^{d^\prime}) 作区分。为了让视觉表示效果更加具备区分性，选择将记号 ![](https://latex.codecogs.com/svg.latex?d^\prime) 变更为 ![](https://latex.codecogs.com/svg.latex?m) ，但保持实际值不变，即 ![](https://latex.codecogs.com/svg.latex?m=d^\prime) 。
+
+### 2.1、引入 ![](https://latex.codecogs.com/svg.latex?L_5=R(z)=\alpha\lVert{}z\rVert_1) 之前
+
+起初，没有引入 ![](https://latex.codecogs.com/svg.latex?L_5=R(z)=\alpha\lVert{}z\rVert_1) 。<br>
+在损失项
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?L_1=E_\omega(x,y,z)=D(s_y,\text{Pred}(s_x,z))">
+</p>
+
+的作用下，训练中的JEPA会无视 ![](https://latex.codecogs.com/svg.latex?s_x) ，并推断出能够使
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?L_1=E_\omega(x,y,z)=D(s_y,\text{Pred}(s_x,z))">
+</p>
+
+取得最小值的那个 ![](https://latex.codecogs.com/svg.latex?z) ，也就是使得
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?L_1=E_\omega(x,y,z)=D(s_y,\text{Pred}(s_x,z))=0">
+</p>
+
+的那个 ![](https://latex.codecogs.com/svg.latex?z) ，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\check{z}=\underset{z\in\mathbb{R}^n}{\text{argmin}}\,E_\omega(x,y,z).">
+</p>
+
+在能量景观当中，训练数据点 ![](https://latex.codecogs.com/svg.latex?(x,y)) 的能量即为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?F_\omega(x,y)=\min_{z\in\mathbb{R}^n}E_\omega(x,y,z)=E_\omega(x,y,\check{z})=0.">
+</p>
+
+由于 ![](https://latex.codecogs.com/svg.latex?\omega_{\text{Pred}}) 的病态性，远不止训练数据点，所有数据点的能量都将为0，能量景观坍塌为平原。
+
+### 2.2、引入 ![](https://latex.codecogs.com/svg.latex?L_5=R(z)=\alpha\lVert{}z\rVert_1) 之后
+
+首先澄清一点，![](https://latex.codecogs.com/svg.latex?L_2,L_3,L_4) 完全不涉及潜变量 ![](https://latex.codecogs.com/svg.latex?z) ，这3个损失项与当前内容无关。<br>
+现在，引入了 ![](https://latex.codecogs.com/svg.latex?L_5=R(z)=\alpha\lVert{}z\rVert_1) 。<br>
+在 ![](https://latex.codecogs.com/svg.latex?L_1) 与 ![](https://latex.codecogs.com/svg.latex?L_5) 之和
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?L_1+L_5=E_\omega(x,y,z)+R(z)=D(s_y,\text{Pred}(s_x,z))+\alpha\lVert{}z\rVert_1">
+</p>
+
+的作用下，训练中的JEPA会推断出能够使
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?L_1+L_5=E_\omega(x,y,z)+R(z)=D(s_y,\text{Pred}(s_x,z))+\alpha\lVert{}z\rVert_1">
+</p>
+
+取得最小值的那个 ![](https://latex.codecogs.com/svg.latex?z) ，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\check{z}=\underset{z\in\mathbb{R}^n}{\text{argmin}}\,\Bigl[E_\omega(x,y,z)+R(z)\Bigr].">
+</p>
+
+在能量景观当中，训练数据点的能量即为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?F(s_x,s_y)=\min_{z\in\mathbb{R}^n}\Bigl[E_\omega(x,y,z)+R(z)\Bigr],">
+</p>
+
+它将会足够小，至少小于某个正数。<br>
+为了防止能量景观坍塌，一个基本的构想表述为如下4点：<br>
+1、定义一个阈值，能量低于该阈值的区域定义为“低能量区域”，反之则为“高能量区域”。<br>
+2、如果低能量区域的测度（measure，二维空间测度的别名就是“面积”，三维空间测度的别名就是“体积”）是有限的，能量景观就不会坍塌。能量景观坍塌后所变成的平原，其低能量区域的测度恰恰就是无限的。<br>
+3、对于非平原的能量景观，定义的阈值越小，低能量区域的测度就越小。<br>
+4、训练中的JEPA会在损失项的驱动下，使训练数据点占据测度有限的低能量区域，并且默认非训练数据点位于高能量区域，不会使其参与对低能量区域的占据。<br>
+由此，一套用于论证 ![](https://latex.codecogs.com/svg.latex?L_5=R(z)=\alpha\lVert{}z\rVert_1) 如何防止能量景观坍塌的数学框架呼之欲出。
