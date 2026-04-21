@@ -813,3 +813,265 @@ JEPA训练遵循的第4项原则为：使潜变量 ![](https://latex.codecogs.co
 3、对于非平原的能量景观，定义的阈值越小，低能量区域的测度就越小。<br>
 4、训练中的JEPA会在损失项的驱动下，使训练数据点占据测度有限的低能量区域，并且默认非训练数据点位于高能量区域，不会使其参与对低能量区域的占据。<br>
 由此，一套用于论证 ![](https://latex.codecogs.com/svg.latex?L_5=R(z)=\alpha\lVert{}z\rVert_1) 如何防止能量景观坍塌的数学框架呼之欲出。
+
+## （选读）3、论证框架的初步建立
+
+对于能量景观中的任意数据点 ![](https://latex.codecogs.com/svg.latex?(x,y)) ，定义其能量为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}F(s_x,s_y)&=\min_{z\in\mathbb{R}^n}\Bigl[E_\omega(x,y,z)+R(z)\Bigr]\\&=\min_{z\in\mathbb{R}^n}\Bigl[D(s_y,\text{Pred}(s_x,z))+\alpha\lVert{}z\rVert_1\Bigr].\end{align*}">
+</p>
+
+假设 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)\in\mathbb{R}^m) 关于 ![](https://latex.codecogs.com/svg.latex?z\in\mathbb{R}^n) 是线性的，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z)=Az+b\in\mathbb{R}^m,">
+</p>
+
+其中 ![](https://latex.codecogs.com/svg.latex?A\in\mathbb{R}^{m\times{}n},b\in\mathbb{R}^m) 均为关于 ![](https://latex.codecogs.com/svg.latex?s_x\in\mathbb{R}^m) 的函数，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?A=A(s_x)\in\mathbb{R}^{m\times{}n},\quad{}b=b(s_x)\in\mathbb{R}^m.">
+</p>
+
+于是，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}F(s_x,s_y)&=\min_{z\in\mathbb{R}^n}\Bigl[D(s_y,\text{Pred}(s_x,z))+\alpha\lVert{}z\rVert_1\Bigr]\\&=\min_{z\in\mathbb{R}^n}\Bigl[D(s_y,Az+b)+\alpha\lVert{}z\rVert_1\Bigr].\end{align*}">
+</p>
+
+定义阈值 ![](https://latex.codecogs.com/svg.latex?h>0) ，并将低能量区域定义为满足 ![](https://latex.codecogs.com/svg.latex?F(s_x,s_y)<h) 的 ![](https://latex.codecogs.com/svg.latex?s_y) 的集合，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{Y}_h=\{s_y:F(s_x,s_y)<h\},">
+</p>
+
+只需论证 ![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 的测度有限或者 ![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 作为子集，被包含于某个测度有限的集合即可。<br>
+在后文中，不仅限于对后一命题进行论证，而是会对 ![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 的集合包含关系的上下界以及集合包含关系在 ![](https://latex.codecogs.com/svg.latex?h\to{}0^+) 时的极限行为进行全面论证。
+
+## （选读）4、![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 的集合包含关系的下界
+
+### 4.1、下界推导的步骤1
+
+定义
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{S}\subseteq\{1,\cdots,n\},\quad\mathcal{M}_{\mathcal{S}}=\{Az+b:z_i=0\,\;\text{for}\,\;\forall{}i\notin\mathcal{S}\},\quad\mathcal{M}_{\mathcal{S}}^\delta=\{Az+b:z_i=0\,\;\text{for}\,\;\forall{}i\notin\mathcal{S},\,\;\lVert{}z\rVert_1<\delta\}.">
+</p>
+
+根据 ![](https://latex.codecogs.com/svg.latex?\quad\mathcal{M}_{\mathcal{S}}^\delta) 的定义可知，对于任意的 ![](https://latex.codecogs.com/svg.latex?p\in\mathcal{M}_{\mathcal{S}}^{h/\alpha}) ，都存在 ![](https://latex.codecogs.com/svg.latex?z^\prime) ，满足 ![](https://latex.codecogs.com/svg.latex?z_i^\prime=0,\forall{}i\notin\mathcal{S}) 以及 ![](https://latex.codecogs.com/svg.latex?\lVert{}z^\prime\rVert_1<h/\alpha) ，并使得 ![](https://latex.codecogs.com/svg.latex?p=Az^\prime+b) 。<br>
+于是，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}F(s_x,p)&=\min_{z\in\mathbb{R}^n}\Bigl[D(p,Az+b)+\alpha\lVert{}z\rVert_1\Bigr]\\&\leq{}D(p,Az^\prime+b)+\alpha\lVert{}z^\prime\rVert_1\\&=D(p,p)+\alpha\lVert{}z^\prime\rVert_1\\&=0+\alpha\lVert{}z^\prime\rVert_1\\&=\alpha\lVert{}z^\prime\rVert_1\\&<\alpha\cdot\frac{h}{\alpha}\\&=h.\end{align*}">
+</p>
+
+根据 ![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 的定义，可以直接判断，![](https://latex.codecogs.com/svg.latex?p\in\mathcal{Y}_h) 。
+
+### 4.2、下界推导的步骤2
+
+总之，对于任意的 ![](https://latex.codecogs.com/svg.latex?p\in\mathcal{M}_{\mathcal{S}}^{h/\alpha}) ，都有 ![](https://latex.codecogs.com/svg.latex?p\in\mathcal{Y}_h) 。<br>
+对A集合而言，如果它的任意一个元素都属于B集合，那么A集合被包含于B集合。这两个命题是等价的。因此，可以直接判断，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}}^{h/\alpha}\subseteq\mathcal{Y}_h,">
+</p>
+
+![](https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}}^{h/\alpha}) 即为 ![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 的下界。
+
+## （选读）5、![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 的集合包含关系的上界
+
+### 5.1、上界推导的步骤1
+
+根据 ![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 的定义可知，对于任意的 ![](https://latex.codecogs.com/svg.latex?p\in\mathcal{Y}_h) ，都存在 ![](https://latex.codecogs.com/svg.latex?z^*) ，使得
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}F(s_x,p)&=\min_{z\in\mathbb{R}^n}\Bigl[D(p,Az+b)+\alpha\lVert{}z\rVert_1\Bigr]\\&=D(p,Az^*+b)+\alpha\lVert{}z^*\rVert_1\\&<h,\end{align*}">
+</p>
+
+因此，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}\alpha\lVert{}z^*\rVert_1&\leq{}D(p,Az^*+b)+\alpha\lVert{}z^*\rVert_1\\&<h,\end{align*}">
+</p>
+
+因此，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\lVert{}z^*\rVert_1<\frac{h}{\alpha}.">
+</p>
+
+### 5.2、上界推导的步骤2
+
+设 ![](https://latex.codecogs.com/svg.latex?z^*) 的所有非零分量当中，绝对值最小的分量的绝对值为 ![](https://latex.codecogs.com/svg.latex?\varepsilon) ，则存在
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?k_{\max}\in\mathcal{N},\quad{}k_{\max}\cdot\varepsilon\leq\lVert{}z^*\rVert_1<\frac{h}{\alpha},\quad{}k_{\max}=\lfloor\frac{h}{\varepsilon\alpha}\rfloor,">
+</p>
+
+使得 ![](https://latex.codecogs.com/svg.latex?z^*) 的零范数（即非零分量的个数）![](https://latex.codecogs.com/svg.latex?\lVert{}z^*\rVert_0) 满足
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\lVert{}z^*\rVert_0\leq{}k_{\max}.">
+</p>
+
+### 5.3、上界推导的步骤3
+
+总之，对于任意的 ![](https://latex.codecogs.com/svg.latex?p\in\mathcal{Y}_h) ，都存在 ![](https://latex.codecogs.com/svg.latex?z^*) ，满足
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{S}^*=\{i:i\in\mathcal{S},z_i^*\neq{}0\},\quad{}\lvert\mathcal{S}^*\rvert=\lVert{}z^*\rVert_0\leq{}k_{\max},">
+</p>
+
+其中 ![](https://latex.codecogs.com/svg.latex?\lvert\mathcal{S}^*\rvert) 表示集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{S}^*) 的基数（即非零元素的个数），并使得
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?D(p,Az^*+b)+\alpha\lVert{}z^*\rVert_1<h.">
+</p>
+
+### 5.4、上界推导的步骤4
+
+由于
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}^*}=\{Az+b:z_i=0\,\;\text{for}\,\;\forall{}i\notin\mathcal{S}^*\},">
+</p>
+
+所以 ![](https://latex.codecogs.com/svg.latex?Az^*+b\in\mathcal{M}_{\mathcal{S}^*}) 。
+
+定义
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\text{Proj}_{\mathcal{M}_{\mathcal{S}}}(s_y)=\underset{p\in\mathcal{M}_{\mathcal{S}}}{\text{argmin}}\,D(s_y,p),\quad\mathcal{N}_{h,\mathcal{S}}=\{s_y:D(s_y,\text{Proj}_{\mathcal{M}_{\mathcal{S}}}(s_y))<h\},">
+</p>
+
+其中，<br>
+1、![](https://latex.codecogs.com/svg.latex?\text{Proj}_{\mathcal{M}_{\mathcal{S}}}(s_y)) 意即：给定一个点 ![](https://latex.codecogs.com/svg.latex?s_y) ，要求在集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}}) 中找到一个点；在集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}}) 中的所有点当中，找到的那个点与给定的点 ![](https://latex.codecogs.com/svg.latex?s_y) 的“距离”最小；该“距离”就定义为点 ![](https://latex.codecogs.com/svg.latex?s_y) 与集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}}) 的“距离”。在三维几何当中，该过程其实就是指一个点对一个面发起（垂直）投影（Projection），得到一个投影点；在面上的所有点当中，这个投影点与发起投影的那个点的距离是最小的，这个距离就定义为点与面的距离。<br>
+2、![](https://latex.codecogs.com/svg.latex?\mathcal{N}_{h,\mathcal{S}}) 意即：与集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}}) 的“距离”小于 ![](https://latex.codecogs.com/svg.latex?h) 的无数个点所组成的集合，也就是 ![](https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}}) 的h-邻域。<br>
+考虑到 ![](https://latex.codecogs.com/svg.latex?Az^*+b\in\mathcal{M}_{\mathcal{S}^*}) ，![](https://latex.codecogs.com/svg.latex?Az^*+b) 本质上是集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}^*}) 中的“任意点”，于是，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}D(s_y,\text{Proj}_{\mathcal{M}_{\mathcal{S}^*}}(s_y))&\leq{}D(s_y,Az^*+b)\\&\leq{}D(s_y,Az^*+b)+\alpha\lVert{}z^*\rVert_1\\&<h,\end{align*}">
+</p>
+
+因此，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?p\in\mathcal{N}_{h,\mathcal{S}^*}.">
+</p>
+
+### 5.5、上界推导的步骤5
+
+再根据
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\lvert\mathcal{S}^*\rvert\leq{}k_{\max},">
+</p>
+
+可以直接判断，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{N}_{h,\mathcal{S}^*}\subseteq\mathcal{N}_{h,\mathcal{S}^{(0)}}\cup\mathcal{N}_{h,\mathcal{S}^{(1)}}\cup\mathcal{N}_{h,\mathcal{S}^{(2)}}\cup\cdots\cup\mathcal{N}_{h,\mathcal{S}^*}\cup\cdots\cup\mathcal{N}_{h,\mathcal{S}^{(k_{\max})}}=\bigcup_{\mathcal{S}:\lvert\mathcal{S}\rvert\leq{}k_{\max}}\mathcal{N}_{h,\mathcal{S}},">
+</p>
+
+其中 ![](https://latex.codecogs.com/svg.latex?\mathcal{S}^{(0)},\mathcal{S}^{(1)},\mathcal{S}^{(2)},\cdots,\mathcal{S}^{(k_{\max})}) 分别表示基数为 ![](https://latex.codecogs.com/svg.latex?0,1,2,\cdots,k_{\max}) 的集合 ![](https://latex.codecogs.com/svg.latex?\mathcal{S}) 。
+
+### 5.6、上界推导的步骤6
+
+于是，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?p\in\mathcal{N}_{h,\mathcal{S}^*}\subseteq\bigcup_{\mathcal{S}:\lvert\mathcal{S}\rvert\leq{}k_{\max}}\mathcal{N}_{h,\mathcal{S}},">
+</p>
+
+从而有
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?p\in\bigcup_{\mathcal{S}:\lvert\mathcal{S}\rvert\leq{}k_{\max}}\mathcal{N}_{h,\mathcal{S}}.">
+</p>
+
+### 5.7、上界推导的步骤7
+
+总之，对于任意的 ![](https://latex.codecogs.com/svg.latex?p\in\mathcal{Y}_h) ，都有
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?p\in\bigcup_{\mathcal{S}:\lvert\mathcal{S}\rvert\leq{}k_{\max}}\mathcal{N}_{h,\mathcal{S}},">
+</p>
+
+所以
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{Y}_h\subseteq\bigcup_{\mathcal{S}:\lvert\mathcal{S}\rvert\leq{}k_{\max}}\mathcal{N}_{h,\mathcal{S}},">
+</p>
+
+后者即为 ![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 的上界。上界的测度是有限的，那么 ![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 的测度就必然有限。由此完成了“ ![](https://latex.codecogs.com/svg.latex?L_5=R(z)=\alpha\lVert{}z\rVert_1) 防止能量景观坍塌”的论证。<br>
+后文将对集合包含关系在 ![](https://latex.codecogs.com/svg.latex?h\to{}0^+) 时的极限行为进行延伸探索。
+
+## （选读）6、集合包含关系在 ![](https://latex.codecogs.com/svg.latex?h\to{}0^+) 时的极限行为
+
+### 6.1、![](https://latex.codecogs.com/svg.latex?h\to{}0^+) 时的下界 ![](https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}}^{h/\alpha})
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}}^{h/\alpha}=\{Az+b:z_i=0\,\;\text{for}\,\;\forall{}i\notin\mathcal{S},\,\;\lVert{}z\rVert_1<\frac{h}{\alpha}\},">
+</p>
+
+当 ![](https://latex.codecogs.com/svg.latex?h\to{}0^+) 时，![](https://latex.codecogs.com/svg.latex?\lVert{}z\rVert_1\to{}0^+) ，从而 ![](https://latex.codecogs.com/svg.latex?z\to\mathbf{0})（零向量），从而 ![](https://latex.codecogs.com/svg.latex?Az+b\to{}b) ，从而
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{M}_{\mathcal{S}}^{h/\alpha}\to\{b\}.">
+</p>
+
+### 6.2、![](https://latex.codecogs.com/svg.latex?h\to{}0^+) 时的 ![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h)
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}\mathcal{Y}_h&=\{s_y:F(s_x,s_y)<h\}\\&=\{s_y:\min_{z\in\mathbb{R}^n}\Bigl[D(s_y,Az+b)+\alpha\lVert{}z\rVert_1\Bigr]<h\},\end{align*}">
+</p>
+
+存在 ![](https://latex.codecogs.com/svg.latex?z^*) 使得
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}\mathcal{Y}_h&=\{s_y:\min_{z\in\mathbb{R}^n}\Bigl[D(s_y,Az+b)+\alpha\lVert{}z\rVert_1\Bigr]<h\}\\&=\{s_y:D(s_y,Az^*+b)+\alpha\lVert{}z^*\rVert_1<h\},\end{align*}">
+</p>
+
+当 ![](https://latex.codecogs.com/svg.latex?h\to{}0^+) 时，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?D(s_y,Az^*+b)\to{}0^+,\quad{}\alpha\lVert{}z^*\rVert_1\to{}0^+,">
+</p>
+
+从而 ![](https://latex.codecogs.com/svg.latex?\lVert{}z^*\rVert_1\to{}0^+) ，从而 ![](https://latex.codecogs.com/svg.latex?z^*\to\mathbf{0}) ，从而 ![](https://latex.codecogs.com/svg.latex?Az^*+b\to{}b) ，从而
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?D(s_y,Az^*+b)\to{}D(s_y,b),">
+</p>
+
+再根据 ![](https://latex.codecogs.com/svg.latex?D(s_y,Az^*+b)\to{}0^+) ，可知
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?D(s_y,b)\to{}0^+,">
+</p>
+
+从而 ![](https://latex.codecogs.com/svg.latex?s_y\to{}b) ，从而
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{Y}_h\to\{b\}.">
+</p>
+
+### 6.3、![](https://latex.codecogs.com/svg.latex?h\to{}0^+) 时的上界 ![](https://latex.codecogs.com/svg.latex?\bigcup_{\mathcal{S}:\lvert\mathcal{S}\rvert\leq{}k_{\max}}\mathcal{N}_{h,\mathcal{S}})
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{N}_{h,\mathcal{S}}=\{s_y:D(s_y,\text{Proj}_{\mathcal{M}_{\mathcal{S}}}(s_y))<h\},">
+</p>
+
+当 ![](https://latex.codecogs.com/svg.latex?h\to{}0^+) 时，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}\mathcal{N}_{h,\mathcal{S}}&\to\{s_y:D(s_y,\text{Proj}_{\mathcal{M}_{\mathcal{S}}}(s_y))=0\}\\&=\mathcal{M}_{\mathcal{S}},\end{align*}">
+</p>
+
+因此
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\bigcup_{\mathcal{S}:\lvert\mathcal{S}\rvert\leq{}k_{\max}}\mathcal{N}_{h,\mathcal{S}}\to\bigcup_{\mathcal{S}:\lvert\mathcal{S}\rvert\leq{}k_{\max}}\mathcal{M}_{\mathcal{S}}.">
+</p>
+
