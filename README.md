@@ -19,7 +19,7 @@
 ## 2、即时动作 ![](https://latex.codecogs.com/svg.latex?a[0]=\text{A}(s[0]))
 
 智能体的执行模块（Actor module）的策略子模块（policy sub-module）接收 ![](https://latex.codecogs.com/svg.latex?s[0]) 作为输入，直接计算并输出动作（action），即 ![](https://latex.codecogs.com/svg.latex?a[0]=\text{A}(s[0])) 。输出的动作称为“动作提议”（action proposal），它将被随即发送到智能体的效应模块（effector module，例如机械臂、机械足等）并被实际执行。<br>
-该过程就相当于一个直接的函数映射，期间没有任何其他模块的参与，因而表现出反应上的迅速性，类似于人类的“条件反射”或者“肌肉记忆”。<br>
+该过程就相当于一个直接的函数映射，期间没有（除配置器以外的）任何其他模块的参与，因而表现出反应上的迅速性，类似于人类的“条件反射”或者“肌肉记忆”。<br>
 和感知模块的编码器 ![](https://latex.codecogs.com/svg.latex?\text{Enc}(\cdot)) 一样，策略子模块 ![](https://latex.codecogs.com/svg.latex?\text{A}(\cdot)) 也会接受配置器的任务情景功能化配置。
 
 ## 3、世界状态预测 ![](https://latex.codecogs.com/svg.latex?s[1]=\text{Pred}(s[0],a[0]))
@@ -1232,4 +1232,211 @@ JEPA-1根据 ![](https://latex.codecogs.com/svg.latex?s_1[0]) 预测出 ![](http
 
 ## 1、JEPA-2与Actor-2的协作
 
-（未完待续）
+### 1.1、形式化描述
+
+设JEPA-2的编码器为 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_2) ，预测器为 ![](https://latex.codecogs.com/svg.latex?\text{Pred}_2) ，提议“动作”序列为 ![](https://latex.codecogs.com/svg.latex?a_2[2],a_2[4]) ，评价器为 ![](https://latex.codecogs.com/svg.latex?\text{C}_2) 。<br>
+其中：<br>
+1、编码器属于感知模块。<br>
+2、预测器属于世界模型模块。<br>
+3、评价器属于代价模块。<br>
+4、提议“动作”序列是由执行模块（在本节实例中具体指第2个Actor层，简称Actor-2，注意与JEPA-2区分）提出的。<br>
+JEPA-2在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?s_1[0]=\text{Enc}_1(x[0])) 进一步处理，其感知行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?s_2[0]=\text{Enc}_2(s_1[0]).">
+</p>
+
+JEPA-2在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?t=2) 时刻世界状态的预测行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?s_2[2]=\text{Pred}_2(s_2[0],a_2[2]).">
+</p>
+
+JEPA-2在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?t=4) 时刻世界状态、代价的预测行为分别可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}s_2[4]&=\text{Pred}_2(s_2[2],a_2[4])\\&\text{C}_2(s_2[4])\end{align*}">
+</p>
+
+### 1.2、H-JEPA与H-Planning的关系澄清
+
+1、H-JEPA在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻的目标在于：使当前时刻 ![](https://latex.codecogs.com/svg.latex?t=0) 下所预测的 ![](https://latex.codecogs.com/svg.latex?t=i) 未来时刻世界状态 ![](https://latex.codecogs.com/svg.latex?\tilde{s}[i]) 趋同于真实世界状态 ![](https://latex.codecogs.com/svg.latex?s[i]) ，使它们的散度 ![](https://latex.codecogs.com/svg.latex?D(s[i],\tilde{s}[i])) 实现最小化。H-JEPA只有唯一一个用途：为当前时刻提供准确的未来世界状态预测。<br>
+2、H-planning在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻的目标在于：使未来时刻 ![](https://latex.codecogs.com/svg.latex?t=i) 的预测代价 ![](https://latex.codecogs.com/svg.latex?\text{C}(s[i])) 实现最小化（在本节实例中具体指 ![](https://latex.codecogs.com/svg.latex?\text{C}_2(s_2[4])) 的最小化）。这意味着对 ![](https://latex.codecogs.com/svg.latex?t=0) 到 ![](https://latex.codecogs.com/svg.latex?t=i) 这一时间段内所要执行的动作序列的审慎规划。<br>
+尤其需要指出的是，H-Planning的质量优劣恰恰完全取决于未来世界状态预测的准确与否。只有在未来世界状态预测足够准确的时候，动作序列的优化方向与收敛状态才是正确的。<br>
+换句话说，H-JEPA构成了H-Planning的根本前提，为H-Planning提供了不可或缺的预测能力底座。低水平的H-JEPA必然导致错误频出的H-Planning，使其失去真实物理场景中的使用价值。
+
+### 1.3、JEPA-2与Actor-2的协作成果
+
+![](https://latex.codecogs.com/svg.latex?\text{C}_2(s_2[4])) 的最小化过程，就是最优“动作”序列规划的过程，其细节不再赘述。设规划出的最优“动作”序列为 ![](https://latex.codecogs.com/svg.latex?\check{a}_2[2],\check{a}_2[4]) 。<br>
+“动作”一词带有双引号，其内涵将在**下一节的第2.2小节**当中进行说明。
+
+## 2、JEPA-1与Actor-1的协作
+
+### 2.1、形式化描述
+
+设JEPA-1的编码器为 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_1) ，预测器为 ![](https://latex.codecogs.com/svg.latex?\text{Pred}_1) ，提议动作序列为 ![](https://latex.codecogs.com/svg.latex?a_1[0],a_1[1],a_1[2],a_1[3]) ，评价器为 ![](https://latex.codecogs.com/svg.latex?\text{C}_1) 。<br>
+其中：<br>
+1、编码器属于感知模块。<br>
+2、预测器属于世界模型模块。<br>
+3、评价器属于代价模块。<br>
+4、提议动作序列是由执行模块（在本节实例中具体指第1个Actor层，简称Actor-1，注意与JEPA-1区分）提出的。<br>
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻的感知行为、在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻对 ![](https://latex.codecogs.com/svg.latex?t=1) 时刻世界状态的预测行为分别可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}s_1[0]&=\text{Enc}_1(x[0])\\s_1[1]&=\text{Pred}_1(s_1[0],a_1[0])\end{align*}">
+</p>
+
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?t=2) 时刻世界状态的预测行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?s_1[2]=\text{Pred}_1(s_1[1],a_1[1]).">
+</p>
+
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，专门针对预测出的 ![](https://latex.codecogs.com/svg.latex?s_1[2]) ，还存在一个特殊行为，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[2])=D(\check{a}_2[2],s_1[2]).">
+</p>
+
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?t=3) 时刻世界状态的预测行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?s_1[3]=\text{Pred}_1(s_1[2],a_1[2]).">
+</p>
+
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?t=4) 时刻世界状态的预测行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?s_1[4]=\text{Pred}_1(s_1[3],a_1[3]).">
+</p>
+
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，专门针对预测出的 ![](https://latex.codecogs.com/svg.latex?s_1[4]) ，同样存在一个特殊行为，即
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[4])=D(\check{a}_2[4],s_1[4]).">
+</p>
+
+### 2.2、针对 ![](https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[2])) 与 ![](https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[4])) 的解释
+
+现在明确指出：JEPA-2与Actor-2所协作规划出的最优“动作” ![](https://latex.codecogs.com/svg.latex?\check{a}_2[2],\check{a}_2[4]) 并非真实的物理动作。
+
+#### 2.2.1、![](https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[2]))
+
+![](https://latex.codecogs.com/svg.latex?\check{a}_2[2]) 本质上构成了 ![](https://latex.codecogs.com/svg.latex?s_1[2]) 所要满足的某种“条件”（a condition to be satisfied），也可以理解为专门给 ![](https://latex.codecogs.com/svg.latex?s_1[2]) 设定的需要让它达成的某种“标准”。<br>
+![](https://latex.codecogs.com/svg.latex?s_1[2]) 违背这种条件/标准的程度，是用
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[2])=D(\check{a}_2[2],s_1[2])">
+</p>
+
+来衡量的，其中 ![](https://latex.codecogs.com/svg.latex?D(\cdot,\cdot)) 表示某种“违背程度衡量函数”。
+
+#### 2.2.2、![](https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[4]))
+
+![](https://latex.codecogs.com/svg.latex?\check{a}_2[4]) 同理，它本质上构成了 ![](https://latex.codecogs.com/svg.latex?s_1[4]) 所要满足的某种条件，也可以理解为专门给 ![](https://latex.codecogs.com/svg.latex?s_1[4]) 设定的需要让它达成的某种标准。<br>
+![](https://latex.codecogs.com/svg.latex?s_1[4]) 违背这种条件/标准的程度，是用
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[4])=D(\check{a}_2[4],s_1[4])">
+</p>
+
+来衡量的。
+
+#### 2.2.3、“动作”仅仅是下层要满足的条件
+
+![](https://latex.codecogs.com/svg.latex?\check{a}_2[2],\check{a}_2[4]) 也称为“动作的中间层词汇”（the intermediate vocabulary of actions）。<br>
+原论文作者Yann LeCun提到：“动作仅仅是下层要满足的条件这一想法，在控制理论当中实际上并不新鲜。”
+
+### 2.3、JEPA-1与Actor-1的协作成果
+
+![](https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[2])) 与 ![](https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[4])) 的同时最小化过程，就是最优动作序列规划的过程，其细节不再赘述。规划出的最优动作序列 ![](https://latex.codecogs.com/svg.latex?\check{a}_1[0],\check{a}_1[1],\check{a}_1[2],\check{a}_1[3]) 均为真实的物理动作。
+
+## 3、总结
+
+总而言之，<br>
+1、位于高层次的JEPA-2与Actor-2协作进行长期预测，定义长远目标，并根据长远目标对高层次“动作”序列进行规划，规划出的高层次最优“动作”序列将为低层次动作序列的规划提供指导；<br>
+2、位于低层次的JEPA-1与Actor-1协作进行短期预测，仅在高层次最优“动作”序列的指导下，对低层次动作序列进行规划，不涉及对长远目标的访问。<br>
+这是一种自上而下式的规划。<br>
+不过，原论文作者Yann LeCun认为，“联合优化高层次与低层次动作序列可能更有利”。在联合式规划的情形下，低层次动作序列的规划也会在某种程度上接受长远目标的指导，而不再仅仅是接受高层次最优“动作”序列的指导。<br>
+以上内容聚焦于仅具备两层结构、仅涉及五个时间步（从 ![](https://latex.codecogs.com/svg.latex?t=0) 到 ![](https://latex.codecogs.com/svg.latex?t=4) ）的H-Planning，但它所体现的概念可以直接迁移到具备多层结构、涉及更大时间尺度的H-Planning。
+<br><br><br><br><br><br><br><br><br><br>
+
+# 不确定性环境中的H-Planning
+
+在后文中，不确定性环境中的H-Planning将被简称为H-zPlanning，其中小写字母 ![](https://latex.codecogs.com/svg.latex?z) 表示潜变量 ![](https://latex.codecogs.com/svg.latex?z)（用于表征不确定性）。<br>
+相比H-Planning，H-zPlanning引入了潜变量采样器，用于对环境中的不确定性因素进行建模。<br>
+设H-zPlanning在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻接收到 ![](https://latex.codecogs.com/svg.latex?x[0]) 。
+
+## 1、JEPA-2与Actor-2的协作
+
+### 1.1、形式化描述
+
+设JEPA-2的编码器为 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_2) ，预测器为 ![](https://latex.codecogs.com/svg.latex?\text{Pred}_2) ，潜变量采样器为 ![](https://latex.codecogs.com/svg.latex?R_2) ，提议“动作”序列为 ![](https://latex.codecogs.com/svg.latex?a_2[2],a_2[4]) ，评价器为 ![](https://latex.codecogs.com/svg.latex?\text{C}_2) 。<br>
+其中：<br>
+1、编码器属于感知模块。<br>
+2、预测器属于世界模型模块。<br>
+3、潜变量采样器可以被视为世界模型模块的可选增强组件，因此认为潜变量采样器同样属于世界模型模块。<br>
+4、评价器属于代价模块。<br>
+5、提议“动作”序列是由执行模块（即Actor-2）提出的。<br>
+JEPA-2在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?s_1[0]=\text{Enc}_1(x[0])) 进一步处理，其感知行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?s_2[0]=\text{Enc}_2(s_1[0]).">
+</p>
+
+JEPA-2在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?t=2) 时刻世界状态的预测行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?z_2[2]\sim{}R_2,\quad{}s_2[2]=\text{Pred}_2(s_2[0],a_2[2],z_2[2])">
+</p>
+
+JEPA-2在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?t=4) 时刻世界状态的预测行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?z_2[4]\sim{}R_2,\quad{}s_2[4]=\text{Pred}_2(s_2[2],a_2[4],z_2[4])">
+</p>
+
+长远目标即为 ![](https://latex.codecogs.com/svg.latex?\text{C}_2(s_2[4])) 的最小化。
+
+### 1.2、JEPA-2与Actor-2的协作成果
+
+为了简化叙述，默认采用自上而下式规划。<br>
+![](https://latex.codecogs.com/svg.latex?\text{C}_2(s_2[4])) 的最小化过程，就是最优“动作”序列规划的过程，其细节不再赘述。设规划出的最优“动作”序列为 ![](https://latex.codecogs.com/svg.latex?\check{a}_2[2],\check{a}_2[4]) 。
+
+## 2、JEPA-1与Actor-1的协作
+
+### 2.1、形式化描述
+
+设JEPA-1的编码器为 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_1) ，预测器为 ![](https://latex.codecogs.com/svg.latex?\text{Pred}_1) ，潜变量采样器为 ![](https://latex.codecogs.com/svg.latex?R_1) ，提议动作序列为 ![](https://latex.codecogs.com/svg.latex?a_1[0],a_1[1],a_1[2],a_1[3]) ，评价器为 ![](https://latex.codecogs.com/svg.latex?\text{C}_1) 。<br>
+其中：<br>
+1、编码器属于感知模块。<br>
+2、预测器、潜变量采样器同属于世界模型模块。<br>
+3、评价器属于代价模块。<br>
+4、提议动作序列是由执行模块（即Actor-1）提出的。<br>
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻的感知行为、在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻对 ![](https://latex.codecogs.com/svg.latex?t=1) 时刻世界状态的预测行为分别可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}s_1[0]&=\text{Enc}_1(x[0])\\z_1[0]\sim{}R_1,\quad{}s_1[1]&=\text{Pred}_1(s_1[0],a_1[0],z_1[0])\end{align*}">
+</p>
+
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?t=2) 时刻世界状态的预测行为、条件满足程度评估行为分别可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}z_1[1]\sim{}R_1,\quad{}s_1[2]&=\text{Pred}_1(s_1[1],a_1[1],z_1[1])\\\text{C}_1(s_1[2])&=D(\check{a}_2[2],s_1[2])\end{align*}">
+</p>
+
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?t=3) 时刻世界状态的预测行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?z_1[2]\sim{}R_1,\quad{}s_1[3]=\text{Pred}_1(s_1[2],a_1[2],z_1[2]).">
+</p>
+
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https://latex.codecogs.com/svg.latex?t=4) 时刻世界状态的预测行为、条件满足程度评估行为分别可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}z_1[3]\sim{}R_1,\quad{}s_1[4]&=\text{Pred}_1(s_1[3],a_1[3],z_1[3])\\\text{C}_1(s_1[4])&=D(\check{a}_2[4],s_1[4])\end{align*}">
+</p>
+
+### 2.3、JEPA-1与Actor-1的协作成果
+
+![](https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[2])) 与 ![](https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[4])) 的同时最小化过程，就是最优动作序列规划的过程，其细节不再赘述。规划出的最优动作序列 ![](https://latex.codecogs.com/svg.latex?\check{a}_1[0],\check{a}_1[1],\check{a}_1[2],\check{a}_1[3]) 均为真实的物理动作。
