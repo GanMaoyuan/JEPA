@@ -1145,3 +1145,91 @@ JEPA训练遵循的第4项原则为：使潜变量 ![](https://latex.codecogs.co
 ### 2.2、![](https://latex.codecogs.com/svg.latex?L) 对各个神经网络组件的参数的优化成果会被存储
 
 训练结束后，![](https://latex.codecogs.com/svg.latex?\omega_{\text{Enc}_y},\omega_{\text{Enc}_x},\omega_{\text{Pred}}) 作为JEPA的参数，会被存储于物理硬件中，这是当然的。
+<br><br><br><br><br><br><br><br><br><br>
+
+# 分层式JEPA
+
+在后文中，将分层式JEPA（Hierarchical JEPA）简称为H-JEPA。<br>
+设H-JEPA在 ![](https://latex.codecogs.com/svg.latex?t=0,t=1,t=2) 时刻先后接收到 ![](https://latex.codecogs.com/svg.latex?x[0],x[1],x[2]) 。
+
+## 1、第1个JEPA层
+
+设第1个JEPA层（后文简称为JEPA-1）的编码器为 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_1) ，预测器为 ![](https://latex.codecogs.com/svg.latex?\text{Pred}_1) ，潜变量采样器为 ![](https://latex.codecogs.com/svg.latex?R_1) 。
+
+### 1.1、JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻的推理行为
+
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻的推理行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}s_1[0]&=\text{Enc}_1(x[0])\\z_1&\sim{}R_1\\\tilde{s}_1[1]&=\text{Pred}_1(s_1[0],z_1)\end{align*}">
+</p>
+
+它具备代表性，![](https://latex.codecogs.com/svg.latex?t=1,t=2) 等后续时刻的JEPA-1完整推理行为（包括 ![](https://latex.codecogs.com/svg.latex?s_1[2]=\text{Enc}_1(x[2])) 等）与之同构，后文不再分别赘述。
+
+### 1.2、JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=1) 时刻的训练行为
+
+JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=1) 时刻的训练行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}s_1[1]&=\text{Enc}_1(x[1])\\\text{Loss}_1&=D_1(s_1[1],\tilde{s}_1[1])\end{align*}">
+</p>
+
+训练目标即为 ![](https://latex.codecogs.com/svg.latex?\text{Loss}_1) 的最小化，从而实现 ![](https://latex.codecogs.com/svg.latex?\omega_{\text{Enc}_1},\omega_{\text{Pred}_1})（如果 ![](https://latex.codecogs.com/svg.latex?R_1) 是可训练参数化的，而非固定参数化的，则还包括 ![](https://latex.codecogs.com/svg.latex?\omega_{R_1}) ）的迭代优化。
+
+## 2、第2个JEPA层
+
+设第2个JEPA层（后文简称为JEPA-2）的编码器为 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_2) ，预测器为 ![](https://latex.codecogs.com/svg.latex?\text{Pred}_2) ，潜变量采样器为 ![](https://latex.codecogs.com/svg.latex?R_2) 。
+
+### 2.1、JEPA-2在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻的推理行为
+
+JEPA-2在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻的推理行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}s_2[0]&=\text{Enc}_2(s_1[0])\\z_2&\sim{}R_2\\\tilde{s}_2[2]&=\text{Pred}_2(s_2[0],z_2)\end{align*}">
+</p>
+
+它具备代表性，![](https://latex.codecogs.com/svg.latex?t=1,t=2) 等后续时刻的JEPA-2完整推理行为与之同构，后文不再分别赘述。
+
+### 2.2、JEPA-2在 ![](https://latex.codecogs.com/svg.latex?t=2) 时刻的训练行为
+
+JEPA-2在 ![](https://latex.codecogs.com/svg.latex?t=2) 时刻的训练行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}s_2[2]&=\text{Enc}_2(s_1[2])\\\text{Loss}_2&=D_2(s_2[2],\tilde{s}_2[2])\end{align*}">
+</p>
+
+训练目标即为 ![](https://latex.codecogs.com/svg.latex?\text{Loss}_2) 的最小化，从而实现 ![](https://latex.codecogs.com/svg.latex?\omega_{\text{Enc}_2},\omega_{\text{Pred}_2})（如果 ![](https://latex.codecogs.com/svg.latex?R_2) 是可训练参数化的，而非固定参数化的，则还包括 ![](https://latex.codecogs.com/svg.latex?\omega_{R_2}) ）的迭代优化。
+
+## 3、H-JEPA的本质特征
+
+对于H-JEPA而言，推理与训练每时每刻都在同步进行，不存在纯粹的“推理时段”，也不存在纯粹的“训练时段”。推理与训练是一体化的，彼此深度耦合：推理的结果构成训练的基础，训练的结果支撑更准确的推理。<br>
+这构成了H-JEPA的本质特征。
+
+## 4、H-JEPA的内涵
+
+### 4.1、时间尺度差异
+
+JEPA-1与JEPA-2所进行的预测性推理的时间尺度是明显不同的。<br>
+JEPA-1根据 ![](https://latex.codecogs.com/svg.latex?s_1[0]) 预测出 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_1[1]) ，而JEPA-2根据 ![](https://latex.codecogs.com/svg.latex?s_2[0]) 预测出时序更靠后的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_2[2]) 。<br>
+特别值得注意的是，同为“抽象语义表征向量”，![](https://latex.codecogs.com/svg.latex?s_2[0]) 是通过 ![](https://latex.codecogs.com/svg.latex?\text{Enc}_2) 对 ![](https://latex.codecogs.com/svg.latex?s_1[0]) 的进一步处理而得到的，这就意味着，![](https://latex.codecogs.com/svg.latex?s_2[0]) 的抽象层次明确高于 ![](https://latex.codecogs.com/svg.latex?s_1[0]) 的抽象层次。<br>
+基于 ![](https://latex.codecogs.com/svg.latex?s_2[0]) 的预测在更高层次的抽象语义上进行，并且时间尺度更大，时序跨度更长，其接受反馈修正的时机也就更晚。具体而言就是：![](https://latex.codecogs.com/svg.latex?\tilde{s}_2[2]) 与 ![](https://latex.codecogs.com/svg.latex?\text{Loss}_2) 所对应的 ![](https://latex.codecogs.com/svg.latex?t=2) 时刻与初始时刻 ![](https://latex.codecogs.com/svg.latex?t=0) 的时间差更大。<br>
+基于 ![](https://latex.codecogs.com/svg.latex?s_1[0]) 的预测在更低层次的抽象语义上进行，并且时间尺度更小，时序跨度更短，其接受反馈修正的时机也就更早。具体而言就是：![](https://latex.codecogs.com/svg.latex?\tilde{s}_1[1]) 与 ![](https://latex.codecogs.com/svg.latex?\text{Loss}_1) 所对应的 ![](https://latex.codecogs.com/svg.latex?t=1) 时刻与初始时刻 ![](https://latex.codecogs.com/svg.latex?t=0) 的时间差更小。<br>
+
+### 4.2、分层设计的合理性
+
+这种分层设计具备合理性。<br>
+对于智能体而言，低层次抽象语义的变化是剧烈的，其反馈修正是频繁的，这导致其只适合于短期预测，并不适合于长期预测。<br>
+例如，智能体可以根据方向盘与踏板上的提议动作序列，对“行驶轨迹细节”这种低层次抽象语义进行准确的短期预测，但其长期预测对智能体而言是困难的，因为这依赖于“其他车辆、交通信号灯、行人以及其他那些在某种程度上不可被预测的外部事件”。<br>
+对于智能体而言，高层次抽象语义的变化是平缓的，其反馈修正并不频繁，在某些情况下高层次抽象语义甚至是保持不变的，这使其适合于长期预测。<br>
+例如，“到达目的地的大致时间范围”这种省略了大量具体细节的高层次抽象语义（更“粗糙”的世界状态感知）的长期预测，对智能体而言是容易的。<br>
+原论文作者Yann LeCun明确主张：“在多个抽象层次上表征世界状态序列的能力，构成了智能行为的实质（essential to intelligent behavior）。”
+<br><br><br><br><br><br><br><br><br><br>
+
+# 分层式最优动作序列规划
+
+分层式最优动作序列规划（Hierarchical Planning）意即H-JEPA在最优动作序列规划中的应用形态。后文将其简称为H-Planning。<br>
+设H-Planning在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻接收到 ![](https://latex.codecogs.com/svg.latex?x[0]) 。
+
+## 1、JEPA-2与Actor-2的协作
+
+（未完待续）
