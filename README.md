@@ -1578,3 +1578,98 @@ JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https:/
 </p>
 
 ## 2、能量分布与概率分布的等价关系
+
+能量分布与概率分布可以通过吉布斯-玻尔兹曼公式（Gibbs-Boltzmann formula）建立等价关系。<br>
+在能量分布 ![](https://latex.codecogs.com/svg.latex?R) 实例当中，这具体指
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?P(z)=\frac{\exp\Bigl[-R(z)\Bigr]}{\int{}dz^\prime\cdot\exp\Bigl[-R(z^\prime)\Bigr]}=\frac{\exp\Bigl[-R(z)\Bigr]}{\int_{\mathcal{Z}}\exp\Bigl[-R(z^\prime)\Bigr]},">
+</p>
+
+其中：<br>
+1、![](https://latex.codecogs.com/svg.latex?\mathcal{Z}) 表示所有可能被抽到的潜变量所组成的潜变量分布空间。<br>
+2、分子中的 ![](https://latex.codecogs.com/svg.latex?z) 是特指某个潜变量；而分母中的 ![](https://latex.codecogs.com/svg.latex?z^\prime) 泛指潜变量分布空间中任意一个可能被抽到的潜变量。<br>
+3、分母整体意即 ![](https://latex.codecogs.com/svg.latex?\exp\Bigl[-R(z^\prime)\Bigr]) 函数在整个潜变量分布空间中的积分。<br>
+以上公式实例构成能量分布 ![](https://latex.codecogs.com/svg.latex?R) 与概率分布 ![](https://latex.codecogs.com/svg.latex?P) 的等价关系。
+
+## 3、![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 所服从的条件分布对应的条件概率密度函数
+
+![](https://latex.codecogs.com/svg.latex?\tilde{s}_y,s_x,z) 三者的关系被形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\tilde{s}_y=\text{Pred}(s_x,z).">
+</p>
+
+![](https://latex.codecogs.com/svg.latex?z) 是从分布当中随机抽取得到的，因此，![](https://latex.codecogs.com/svg.latex?z) 内在地具备随机性。<br>
+尽管 ![](https://latex.codecogs.com/svg.latex?\text{Pred}(\cdot,\cdot)) 函数的映射过程是确定的（不具备随机性），但由于作为函数输入之一的 ![](https://latex.codecogs.com/svg.latex?z) 具备随机性，函数输出的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 也就内在地具备随机性。<br>
+这意味着，![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 也会服从某个分布，它在本质上也是从某个分布当中随机抽取得到的。
+
+### 3.1、![](https://latex.codecogs.com/svg.latex?P(\tilde{s}_y\mid{}s_x,z))
+
+实际上，如果将 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_x,z) 视为条件变量，![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 视为事件变量，那么 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 所服从的条件概率分布对应的条件概率密度函数可以朴素而直接地表示为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?P(\tilde{s}_y\mid{}s_x,z)=\delta(\tilde{s}_y-\text{Pred}(s_x,z)),">
+</p>
+
+其中，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\delta(v-a)=\begin{cases}+\infty,&v=a\\0,\quad{}&v\neq{}a\end{cases}\quad\quad\quad\quad\int{}dv\cdot\delta(v-a)=1.">
+</p>
+
+现在希望将其转化为 ![](https://latex.codecogs.com/svg.latex?P(\tilde{s}_y\mid{}s_x)) ，去掉随机成分 ![](https://latex.codecogs.com/svg.latex?z) 。
+
+### 3.2、更一般的 ![](https://latex.codecogs.com/svg.latex?P(y\mid{}x,z),P(y\mid{}x))
+
+以下给出更一般的问题形式化框架。<br>
+设 ![](https://latex.codecogs.com/svg.latex?z) 服从某个分布，其概率密度函数为 ![](https://latex.codecogs.com/svg.latex?P(z)) ，并且与 ![](https://latex.codecogs.com/svg.latex?x) 相互独立。<br>
+目标是将 ![](https://latex.codecogs.com/svg.latex?P(y\mid{}x,z)) 转化为 ![](https://latex.codecogs.com/svg.latex?P(y\mid{}x)) 。<br>
+首先，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?P(y\mid{}x)=\int{}dz\cdot{}P(y,z\mid{}x)">
+</p>
+
+属于边缘化（marginalization）操作，是成立的。<br>
+根据
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?P(y,z\mid{}x)=\frac{P(x,y,z)}{P(x)}=\frac{P(x,y,z)}{P(x,z)}\cdot\frac{P(x,z)}{P(x)}=P(y\mid{}x,z)\cdot{}P(z\mid{}x),">
+</p>
+
+可以进一步推知
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}P(y\mid{}x)&=\int{}dz\cdot{}P(y,z\mid{}x)\\&=\int{}dz\cdot{}P(y\mid{}x,z)\cdot{}P(z\mid{}x).\end{align*}">
+</p>
+
+由于 ![](https://latex.codecogs.com/svg.latex?z) 与 ![](https://latex.codecogs.com/svg.latex?x) 相互独立，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?P(x,z)=P(x)\cdot{}P(z),">
+</p>
+
+因此，
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?P(z\mid{}x)=\frac{P(x,z)}{P(x)}=\frac{P(x)\cdot{}P(z)}{P(x)}=P(z),">
+</p>
+
+从而
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}P(y\mid{}x)&=\int{}dz\cdot{}P(y\mid{}x,z)\cdot{}P(z\mid{}x)\\&=\int{}dz\cdot{}P(y\mid{}x,z)\cdot{}P(z).\end{align*}">
+</p>
+
+由此，完成了 ![](https://latex.codecogs.com/svg.latex?P(y\mid{}x,z)) 到 ![](https://latex.codecogs.com/svg.latex?P(y\mid{}x)) 的转化：让 ![](https://latex.codecogs.com/svg.latex?P(y\mid{}x,z)) 对 ![](https://latex.codecogs.com/svg.latex?z) 取期望，就可以得到 ![](https://latex.codecogs.com/svg.latex?P(y\mid{}x)) 。
+
+### 3.3、![](https://latex.codecogs.com/svg.latex?P(\tilde{s}_y\mid{}s_x))
+
+现在，![](https://latex.codecogs.com/svg.latex?\tilde{s}_y,s_x,z) 可以分别作为上述一般形式中 ![](https://latex.codecogs.com/svg.latex?y,x,z) 的具体实例，此时有
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\begin{align*}P(\tilde{s}_y\mid{}s_x)&=\int{}dz\cdot{}P(\tilde{s}_y\mid{}s_x,z)\cdot{}P(z)\\&=\int{}dz\cdot\delta(\tilde{s}_y-\text{Pred}(s_x,z))\cdot{}P(z)\\&=\int_{\mathcal{Z}}\delta(\tilde{s}_y-\text{Pred}(s_x,z))\cdot{}P(z),\end{align*}">
+</p>
+
+此即 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 所服从的条件分布对应的条件概率密度函数。
