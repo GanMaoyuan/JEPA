@@ -1440,3 +1440,141 @@ JEPA-1在 ![](https://latex.codecogs.com/svg.latex?t=0) 时刻，对 ![](https:/
 ### 2.3、JEPA-1与Actor-1的协作成果
 
 ![](https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[2])) 与 ![](https://latex.codecogs.com/svg.latex?\text{C}_1(s_1[4])) 的同时最小化过程，就是最优动作序列规划的过程，其细节不再赘述。规划出的最优动作序列 ![](https://latex.codecogs.com/svg.latex?\check{a}_1[0],\check{a}_1[1],\check{a}_1[2],\check{a}_1[3]) 均为真实的物理动作。
+<br><br><br><br><br><br><br><br><br><br>
+
+# 键值联想记忆（key-value associative memory）
+
+设查询（query）向量为 ![](https://latex.codecogs.com/svg.latex?q\in\mathbb{R}^{d_{qk}}) 。<br>
+针对联想记忆神经网络而言，![](https://latex.codecogs.com/svg.latex?q\in\mathbb{R}^{d_{qk}}) 可以理解为“内存地址”，但实质上是一种外部访问量，其身份可以理解为智能体对自身的联想记忆神经网络所发起的各类记忆行为的载体数据。<br>
+设键（key）矩阵为 ![](https://latex.codecogs.com/svg.latex?K\in\mathbb{R}^{d_{qk}\times{}n}) ，值（value）矩阵为 ![](https://latex.codecogs.com/svg.latex?V\in\mathbb{R}^{d_v\times{}n}) 。<br>
+键矩阵的第 ![](https://latex.codecogs.com/svg.latex?i) 列向量 ![](https://latex.codecogs.com/svg.latex?k_i\in\mathbb{R}^{d_{qk}}) 与值矩阵的第 ![](https://latex.codecogs.com/svg.latex?i) 列向量 ![](https://latex.codecogs.com/svg.latex?v_i\in\mathbb{R}^{d_v}) 是一一配对的，它们组成 ![](https://latex.codecogs.com/svg.latex?(k_i,v_i)) 。<br>
+1、键矩阵与值矩阵其实就构成了联想记忆神经网络的实质。<br>
+2、![](https://latex.codecogs.com/svg.latex?(k_i,v_i)) 配对其实就表征着智能体针对世界中某个实体（记为实体 ![](https://latex.codecogs.com/svg.latex?i) ）的主观记忆内容。<br>
+3、键/值矩阵的列向量个数 ![](https://latex.codecogs.com/svg.latex?n) 其实就表示当前的记忆容量大小（可以增长）。
+
+## 1、记忆检索行为
+
+记忆检索行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\tilde{w}_i=\text{match}(q,k_i)\in\mathbb{R},\quad\tilde{w}=\text{Match}(q,K)\in\mathbb{R}^n">
+</p>
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?w=\text{Normalize}(\tilde{w})\in\mathbb{R}^n,\quad{}w_i\in\mathbb{R}">
+</p>
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\text{Memory}(q)=\sum_{i=1}^{n}w_iv_i\in\mathbb{R}^{d_v}">
+</p>
+
+其中：<br>
+1、![](https://latex.codecogs.com/svg.latex?\tilde{w}_i\in\mathbb{R}) 表示 ![](https://latex.codecogs.com/svg.latex?q\in\mathbb{R}^{d_{qk}}) 与 ![](https://latex.codecogs.com/svg.latex?k_i\in\mathbb{R}^{d_{qk}}) 的匹配程度，进而作为 ![](https://latex.codecogs.com/svg.latex?v_i\in\mathbb{R}^{d_v}) 的未归一化权重。<br>
+2、![](https://latex.codecogs.com/svg.latex?w\in\mathbb{R}^n) 是 ![](https://latex.codecogs.com/svg.latex?\tilde{w}\in\mathbb{R}^n) 的归一化形式，![](https://latex.codecogs.com/svg.latex?w_i\in\mathbb{R}) 就是 ![](https://latex.codecogs.com/svg.latex?v_i\in\mathbb{R}^{d_v}) 的权重。<br>
+3、![](https://latex.codecogs.com/svg.latex?\text{Normalize}(\cdot)) 函数针对分量 ![](https://latex.codecogs.com/svg.latex?\tilde{w}_i\in\mathbb{R}) 的变换为 ![](https://latex.codecogs.com/svg.latex?\text{normalize}(\cdot)) ，![](https://latex.codecogs.com/svg.latex?w_i=\text{normalize}(\tilde{w}_i)) 的具体实例可以是
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?w_i=\frac{\exp(\tilde{w}_i)}{\gamma+\sum_{j=1}^n\exp(\tilde{w}_j)},">
+</p>
+
+其中 ![](https://latex.codecogs.com/svg.latex?\gamma>0) 为超参数。<br>
+4、![](https://latex.codecogs.com/svg.latex?\text{Memory}(q)\in\mathbb{R}^{d_v}) 就是记忆检索结果。
+
+## 2、记忆更新行为
+
+设 ![](https://latex.codecogs.com/svg.latex?r\in\mathbb{R}^{d_v}) 是一个用于指导联想记忆神经网络更新（具体而言是 ![](https://latex.codecogs.com/svg.latex?V\in\mathbb{R}^{d_v\times{}n}) 的更新，此阶段 ![](https://latex.codecogs.com/svg.latex?K\in\mathbb{R}^{d_{qk}\times{}n}) 不会参与更新）的外部访问量，它与 ![](https://latex.codecogs.com/svg.latex?q\in\mathbb{R}^{d_{qk}}) 是配套的，组成 ![](https://latex.codecogs.com/svg.latex?(q,r)) 。<br>
+记忆更新行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\tilde{w}_i=\text{match}(q,k_i)\in\mathbb{R},\quad\tilde{w}=\text{Match}(q,K)\in\mathbb{R}^n">
+</p>
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?w=\text{Normalize}(\tilde{w})\in\mathbb{R}^n,\quad{}w_i\in\mathbb{R}">
+</p>
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\check{v}_i=\text{update}(v_i,r,w_i)\in\mathbb{R}^{d_v},\quad\check{V}=\text{Update}(V,r,w)\in\mathbb{R}^{d_v\times{}n}">
+</p>
+
+其中：<br>
+1、![](https://latex.codecogs.com/svg.latex?v_i\in\mathbb{R}^{d_v}) 表征旧记忆内容，![](https://latex.codecogs.com/svg.latex?\check{v}_i\in\mathbb{R}^{d_v}) 表征新记忆内容。<br>
+2、![](https://latex.codecogs.com/svg.latex?\check{v}_i=\text{update}(v_i,r,w_i)) 的具体实例可以是
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\check{v}_i=w_i\cdot{}r+(1-w_i)\cdot{}v_i,">
+</p>
+
+当 ![](https://latex.codecogs.com/svg.latex?w_i\to{}0) 时，![](https://latex.codecogs.com/svg.latex?\check{v}_i\to{}v_i) ，这表示 ![](https://latex.codecogs.com/svg.latex?r\in\mathbb{R}^{d_v}) 与 ![](https://latex.codecogs.com/svg.latex?v_i\in\mathbb{R}^{d_v}) 几乎无关（相关程度由分别对应的 ![](https://latex.codecogs.com/svg.latex?q\in\mathbb{R}^{d_{qk}}) 与 ![](https://latex.codecogs.com/svg.latex?k_i\in\mathbb{R}^{d_{qk}}) 的匹配程度衡量），记忆内容几乎保持不变；<br>
+当 ![](https://latex.codecogs.com/svg.latex?w_i\to{}1) 时，![](https://latex.codecogs.com/svg.latex?\check{v}_i\to{}r) ，这表示 ![](https://latex.codecogs.com/svg.latex?r\in\mathbb{R}^{d_v}) 与 ![](https://latex.codecogs.com/svg.latex?v_i\in\mathbb{R}^{d_v}) 高度相关，记忆内容几乎被完全覆写。
+
+## 3、记忆新增行为
+
+记忆新增行为可以形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\forall\tilde{w}_i=\text{match}(q,k_i)<T">
+</p>
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?K\in\mathbb{R}^{d_{qk}\times{}n}\rightarrow\check{K}\in\mathbb{R}^{d_{qk}\times(n+1)},\quad\Bigl[k_1,\cdots,k_n\Bigr]\rightarrow\Bigl[k_1,\cdots,k_n,q\Bigr]">
+</p>
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?V\in\mathbb{R}^{d_v\times{}n}\rightarrow\check{V}\in\mathbb{R}^{d_v\times(n+1)},\quad\Bigl[v_1,\cdots,v_n\Bigr]\rightarrow\Bigl[v_1,\cdots,v_n,r\Bigr]">
+</p>
+
+也就是说，如果 ![](https://latex.codecogs.com/svg.latex?r\in\mathbb{R}^{d_v}) 与值矩阵的任意一个列向量 ![](https://latex.codecogs.com/svg.latex?v_i\in\mathbb{R}^{d_v}) 的相关程度均小于阈值 ![](https://latex.codecogs.com/svg.latex?T) ，那么：<br>
+1、![](https://latex.codecogs.com/svg.latex?q\in\mathbb{R}^{d_{qk}}) 将作为新增的键向量，添加到键矩阵 ![](https://latex.codecogs.com/svg.latex?K\in\mathbb{R}^{d_{qk}\times{}n}) 沿列序号方向的末尾，使之更新为 ![](https://latex.codecogs.com/svg.latex?\check{K}\in\mathbb{R}^{d_{qk}\times(n+1)}) 。<br>
+2、同时，![](https://latex.codecogs.com/svg.latex?r\in\mathbb{R}^{d_v}) 将作为配套新增的值向量，添加到值矩阵 ![](https://latex.codecogs.com/svg.latex?V\in\mathbb{R}^{d_v\times{}n}) 沿列序号方向的末尾，使之更新为 ![](https://latex.codecogs.com/svg.latex?\check{V}\in\mathbb{R}^{d_v\times(n+1)}) 。<br>
+换句话说，如果 ![](https://latex.codecogs.com/svg.latex?r\in\mathbb{R}^{d_v}) 与值矩阵的任意一个列向量 ![](https://latex.codecogs.com/svg.latex?v_i\in\mathbb{R}^{d_v}) 的相关程度均小于阈值 ![](https://latex.codecogs.com/svg.latex?T) ，那么 ![](https://latex.codecogs.com/svg.latex?(q,r)) 配对将添加到联想记忆神经网络当中，成为其中的新增部分；联想记忆神经网络的容量大小也就从原先的 ![](https://latex.codecogs.com/svg.latex?n) 增长到更大的 ![](https://latex.codecogs.com/svg.latex?n+1) 。<br>
+![](https://latex.codecogs.com/svg.latex?\text{normalize}(\cdot)) 函数中的超参数 ![](https://latex.codecogs.com/svg.latex?\gamma) 可以作为阈值 ![](https://latex.codecogs.com/svg.latex?T) 的取值。
+
+## 4、记忆更新行为的实例
+
+在智能体的联想记忆神经网络当中，世界中的瓶子、厨房、餐厅这3个实体分别被表征为3个键值配对，即 ![](https://latex.codecogs.com/svg.latex?(k_{\text{bottle}},v_{\text{bottle}}),(k_{\text{kitchen}},v_{\text{kitchen}}),(k_{\text{dining}-\text{room}},v_{\text{dining}-\text{room}})) 。<br>
+智能体将一个瓶子从厨房拿到餐厅，那么智能体针对这3个实体的记忆将发生更新，具体而言：<br>
+1、在 ![](https://latex.codecogs.com/svg.latex?v_{\text{bottle}}\in\mathbb{R}^{d_v}) 的 ![](https://latex.codecogs.com/svg.latex?d_v) 个分量当中，对“位置”进行编码的那些分量将发生更新。它们在更新前表征“厨房”，在更新后表征“餐厅”。<br>
+2、在 ![](https://latex.codecogs.com/svg.latex?v_{\text{kitchen}}\in\mathbb{R}^{d_v}) 的 ![](https://latex.codecogs.com/svg.latex?d_v) 个分量当中，对“内容”进行编码的那些分量将发生更新。它们在更新前表征“包含瓶子”，在更新后不再表征“包含瓶子”。<br>
+3、在 ![](https://latex.codecogs.com/svg.latex?v_{\text{dining}-\text{room}}\in\mathbb{R}^{d_v}) 的 ![](https://latex.codecogs.com/svg.latex?d_v) 个分量当中，对“内容”进行编码的那些分量将发生更新。它们在更新前不表征“包含瓶子”，在更新后转而表征“包含瓶子”。<br>
+智能体针对那些与“将一个瓶子从厨房拿到餐厅”这一事件无关的其他实体的记忆，不会也不需要发生更新。这体现了某种高效性。
+
+## 5、键-值联想记忆的优势
+
+原论文作者Yann LeCun指出：“传统上，深度学习架构中的模块通过向量或多维数组来进行状态通信。但当被建模对象的状态从一个时间步到下一个时间步期间仅仅发生微小变化时，这往往是一种非常低效的方法。”<br>
+他进一步指出：“智能体的典型动作只会修改世界状态的一小部分。如果一个瓶子正从厨房移到餐厅，瓶子、厨房、餐厅的状态将被修改。但世界的其余部分将不受影响。”<br>
+因此他主张：“这表明世界状态应该以某种可写内存的形式进行维护。每当事件发生时，只有受事件影响的世界状态内存部分需要更新，而其余部分保持不变。”<br>
+键-值联想记忆神经网络恰好可以用于达成这一目的。
+<br><br><br><br><br><br><br><br><br><br>
+
+# 潜变量分布（潜变量采样器）![](https://latex.codecogs.com/svg.latex?R)
+
+## 1、形式化描述框架
+
+### 1.1、基本概念
+
+分布有2种类型：能量分布，概率分布。<br>
+能量分布不需要强制进行积分归一化，而概率分布需要强制进行积分归一化。<br>
+对于能量分布而言，样本的能量越低，它被抽到的可能性就越强；<br>
+而对于概率分布而言，样本的概率越高，它被抽到的可能性才会越强。<br>
+潜变量分布 ![](https://latex.codecogs.com/svg.latex?R) 是一种能量分布。对于 ![](https://latex.codecogs.com/svg.latex?R) 中某个可能被抽到的样本 ![](https://latex.codecogs.com/svg.latex?z) ，它的能量可以记为 ![](https://latex.codecogs.com/svg.latex?R(z)) 。<br>
+![](https://latex.codecogs.com/svg.latex?R(z)) 越小，![](https://latex.codecogs.com/svg.latex?z) 被抽到的可能性越强；<br>
+![](https://latex.codecogs.com/svg.latex?R(z)) 越大，![](https://latex.codecogs.com/svg.latex?z) 被抽到的可能性越弱。
+
+### 1.2、水平集
+
+定义潜变量 ![](https://latex.codecogs.com/svg.latex?z) 的水平集（level set）![](https://latex.codecogs.com/svg.latex?\mathcal{Z}_h) ，也就是使得 ![](https://latex.codecogs.com/svg.latex?R(z)) 小于阈值 ![](https://latex.codecogs.com/svg.latex?h) 的那些 ![](https://latex.codecogs.com/svg.latex?z) 所组成的集合。<br>
+![](https://latex.codecogs.com/svg.latex?\mathcal{Z}_h) 形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{Z}_h=\{z:R(z)<h\}.">
+</p>
+
+当 ![](https://latex.codecogs.com/svg.latex?z) 在 ![](https://latex.codecogs.com/svg.latex?\mathcal{Z}_h) 上变化时，输出的 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 会在 ![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 集合上同步变化。![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 可以理解为 ![](https://latex.codecogs.com/svg.latex?\tilde{s}_y) 的水平集。<br>
+![](https://latex.codecogs.com/svg.latex?\mathcal{Y}_h) 形式化描述为
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\mathcal{Y}_h=\{\tilde{s}_y:\tilde{s}_y=\text{Pred}(s_x,z),\forall{}z\in\mathcal{Z}_h\}.">
+</p>
+
+## 2、能量分布与概率分布的等价关系
