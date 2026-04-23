@@ -672,7 +672,7 @@ JEPA基于 ![](https://latex.codecogs.com/svg.latex?s_x) ，借助 ![](https://l
 随后计算 ![](https://latex.codecogs.com/svg.latex?\sqrt{\text{Var}(C)}) ，具体为
 
 <p align="center">
-<img src="https://latex.codecogs.com/svg.latex?\sqrt{\text{Var}(C)}=\sqrt{\frac{1}{N}\sum_{i=1}^{N}(c_i-\mu_C)},">
+<img src="https://latex.codecogs.com/svg.latex?\sqrt{\text{Var}(C)}=\sqrt{\frac{1}{N}\sum_{i=1}^{N}(c_i-\mu_C)^2},">
 </p>
 
 计算得到的 ![](https://latex.codecogs.com/svg.latex?\sqrt{\text{Var}(C)}) 将作为一种铰链损失的组成部分。该损失项的具体形式为
