@@ -1,6 +1,3 @@
-#### [《A Path Towards Autonomous Machine Intelligence Version 0.9.2, 2022-06-27》](https://openreview.net/pdf?id=BZ5a1r-kVsf)论文阅读笔记
-<br><br><br><br><br><br><br><br><br><br>
-
 # 模式1
 
 ## 1、世界状态 ![](https://latex.codecogs.com/svg.latex?s[0]=\text{Enc}(x))
